@@ -71,7 +71,7 @@ const WebDevBlog = () => {
       <img
         src={banner}
         alt="Web Dev Banner"
-        className="w-full h-64 object-cover rounded-lg shadow-lg mb-6"
+        className="w-full h-64 object-contain rounded-lg shadow-lg mb-6"
       />
       <p className="text-lg text-gray-700 mb-6">
         Web Wizards empowers students to build beautiful, scalable websites and
