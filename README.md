@@ -90,8 +90,8 @@ Hosted via **GitHub Pages / Vercel / Netlify (choose one)**
 ## 🙌 Maintainers
 
 Built & Maintained by **Club Tech Team**  
-Lead Developer: [https://github.com/stom-breaker-07]  
-Contact: [csekitclub@gmail.com] 
+Lead Developer: [Strom_Breaker_07](https://github.com/stom-breaker-07)  
+Contact: [Mail](csekitclub@gmail.com) 
 
 ---
 
