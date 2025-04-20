@@ -38,14 +38,14 @@ const stats: StatCard[] = [
 function AdminDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4 sm:gap-0">
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <div className="flex space-x-4">
-          <button className="btn-primary flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row sm:space-x-4 space-y-4 sm:space-y-0 w-full sm:w-auto">
+          <button className="btn-primary flex items-center justify-center space-x-2">
             <UserPlus className="h-5 w-5" />
             <span>Add Admin</span>
           </button>
-          <button className="btn-primary flex items-center space-x-2">
+          <button className="btn-primary flex items-center justify-center space-x-2">
             <Settings className="h-5 w-5" />
             <span>Settings</span>
           </button>
@@ -84,7 +84,7 @@ function AdminDashboard() {
 
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
             {[
               { title: 'Manage Users', icon: Users, color: 'bg-google-blue' },
               { title: 'Create Quiz', icon: Brain, color: 'bg-google-red' },
@@ -98,7 +98,7 @@ function AdminDashboard() {
                 <div className={`${action.color} text-white p-3 rounded-full mb-2`}>
                   <action.icon className="h-6 w-6" />
                 </div>
-                <span className="text-sm font-medium text-gray-700">{action.title}</span>
+                <span className="text-sm font-medium text-gray-700 text-center">{action.title}</span>
               </button>
             ))}
           </div>
