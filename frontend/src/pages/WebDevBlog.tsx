@@ -64,6 +64,38 @@ const Topics = [
   },
 ];
 
+const Resources = [
+  {
+    link: "https://www.youtube.com/embed/tVzUXW6siu0?si=nfc-rRdt8mp17pJ5",
+    title: "Code With Harry",
+    discription:
+      "Learn web dev with CodeWithHarry using HTML, CSS, JS, React & Node.js.Beginner-friendly, project-based tutorials in Hindi.",
+  },
+  {
+    link: "https://www.youtube.com/embed/_7UQPve99r4?si=OKQ0eqfQVns8t5J5",
+    title: "Free Code Camp",
+    discription:
+      "Build a backend server with Node.js & Express, and connect it to MongoDB Perform full CRUD operations with clean, beginner-friendly code.",
+  },
+  {
+    link: "https://www.youtube.com/embed/kUMe1FH4CHE?si=qlJS3ZcZnGyJrAD2",
+    title: "Free Code Camp",
+    discription:
+      "Learn HTML from scratch and build the foundation of every website.Perfect for beginners with clear explanations and hands-on examples.",
+  },
+  {
+    link: "https://www.youtube.com/embed/OXGznpKZ_sA?si=3qwK7q9Stl3u6tfj",
+    title: "Free Code Camp",
+    discription:
+      "Master CSS from scratch and create stunning, responsive websites with clear explanations and practical examples, perfect for beginners.",
+  },
+  {
+    link: "https://www.youtube.com/embed/ajdRvxDWH4w?si=09uc9NOzy_hmS539",
+    title: "Apna College",
+    discription:
+      "Learn JavaScript from scratch and unlock the power of dynamic web development with easy-to-follow tutorials and hands-on examples, perfect for beginners.",
+  },
+];
 const WebDevBlog = () => {
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -113,12 +145,29 @@ const WebDevBlog = () => {
       <h2 className="text-2xl font-semibold mt-4 mb-4">
         Topics, Content and Timeline(12week)
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg-grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2  gap-8">
         {Topics.map((topic) => (
           <div className="card hover:shadow-lg transition-shadow">
             <h3 className="text-xl font-semibold mb-2">{topic.name}</h3>
             <p className="text-blue-600">{topic.TechStack}</p>
             <p className="text-gra-600">{topic.Project}</p>
+          </div>
+        ))}
+      </div>
+      <h2 className="text-2xl font-semibold mt-4 mb-4">References</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2  gap-8">
+        {Resources.map((links) => (
+          <div className="card hover:shadow-lg transition-shadow p-4 rounded bg-white">
+            <div className="aspect-w-16 aspect-h-10 mb-4">
+              <iframe
+                src={links.link}
+                title={links.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="w-full h-full"
+              ></iframe>
+            </div>
+            <p className="text-gray-600">{links.discription}</p>
           </div>
         ))}
       </div>
