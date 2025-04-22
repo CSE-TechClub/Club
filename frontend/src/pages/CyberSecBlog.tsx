@@ -136,7 +136,7 @@ const CyberSecBlog = () => {
       <img
         src={banner}
         alt="Cybersecurity Banner"
-        className="w-full h-64 object-cover rounded-lg shadow-lg mb-6"
+        className="w-full h-35 md:h-80 object-cover rounded-lg shadow-lg mb-6"
       />
       <p className="text-lg text-gray-700 mb-6">
         Cyber Scholars equips you with the knowledge to defend networks and
@@ -145,34 +145,37 @@ const CyberSecBlog = () => {
       </p>
       <h2 className="text-2xl font-semibold mb-4">🗺️ Roadmap</h2>
       <div className="max-w-5xl bg-white rounded-lg px-8 py-6 text-xl">
-        <h3 className="text-xl font-semibold mb-2">
+        <h3 className="text-xl font-semibold mb-4">
           Course Objectives, Projects & Outcomes
         </h3>
-        <p className="text-gray-600">
-          Master core cybersecurity principles (CIA Triad, risk management,
-          threat modeling).
-        </p>
-        <p className="text-gray-600">
-          Analyze network protocols and architectures (OSI/TCP‑IP), capture &
-          inspect traffic with Wireshark.
-        </p>
-        <p className="text-gray-600">
-          Conduct ethical hacking & penetration tests using Kali Linux tools
-          (Nmap, Metasploit, Burp Suite).
-        </p>
-        <p className="text-gray-600">
-          Secure and harden operating systems and network devices (firewalls,
-          IDS/IPS, VPNs).
-        </p>
-        <p className="text-gray-600">
-          Implement cryptography & secure communications (SSL/TLS, PKI) and
-          manage IAM controls.
-        </p>
-        <p className="text-gray-600">
-          Perform incident response & digital forensics; investigate breaches
-          and produce professional reports.
-        </p>
+        <div className="flex flex-col gap-4 text-justify text-gray-600">
+          <p>
+            1. Master core cybersecurity principles (CIA Triad, risk management,
+            threat modeling).
+          </p>
+          <p>
+            2. Analyze network protocols and architectures (OSI/TCP‑IP), capture
+            & inspect traffic with Wireshark.
+          </p>
+          <p>
+            3. Conduct ethical hacking & penetration tests using Kali Linux
+            tools (Nmap, Metasploit, Burp Suite).
+          </p>
+          <p>
+            4. Secure and harden operating systems and network devices
+            (firewalls, IDS/IPS, VPNs).
+          </p>
+          <p>
+            5. Implement cryptography & secure communications (SSL/TLS, PKI) and
+            manage IAM controls.
+          </p>
+          <p>
+            6. Perform incident response & digital forensics; investigate
+            breaches and produce professional reports.
+          </p>
+        </div>
       </div>
+
       <h2 className="text-2xl font-semibold mt-4 mb-4">
         Topics, Content and Timeline(12week)
       </h2>
