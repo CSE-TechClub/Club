@@ -5,6 +5,7 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Members from './pages/Members';
 import Quizzes from './pages/Quizzes';
+import {LeaderboardPage} from './pages/LeaderboardPage';
 import AdminDashboard from './pages/AdminDashboard';
 import AIBlog from './pages/AIBlog';
 import WebDevBlog from './pages/WebDevBlog';
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/members" element={<Members />} />
             <Route path="/quizzes" element={<Quizzes />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/ai" element={<AIBlog />} />
             <Route path="/web-dev" element={<WebDevBlog />} />
