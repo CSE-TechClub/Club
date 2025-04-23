@@ -11,6 +11,7 @@ import WebDevBlog from './pages/WebDevBlog';
 import DevOpsBlog from './pages/DevOpsBlog';
 import CyberSecBlog from './pages/CyberSecBlog';
 import Login from './pages/Login';
+import Register from './pages/register'
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="/devops" element={<DevOpsBlog />} />
             <Route path="/cyber" element={<CyberSecBlog />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
           </Routes>
         </main>
         <Footer />

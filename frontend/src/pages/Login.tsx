@@ -1,13 +1,14 @@
 import React, { useState } from "react";
+import {Link} from "react-router-dom";
 
 interface LoginFormState {
-  email: string;
+  USN: string;
   password: string;
 }
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState<LoginFormState>({
-    email: "",
+    USN: "",
     password: "",
   });
 
@@ -31,13 +32,13 @@ const Login: React.FC = () => {
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="email" className="block text-gray-700 font-semibold mb-1">
-            Email
+          <label htmlFor="USN" className="block text-gray-700 font-semibold mb-1">
+            USN
           </label>
           <input
-            type="email"
-            name="email"
-            value={formData.email}
+            type="USN"
+            name="USN"
+            value={formData.USN}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-google.blue"
@@ -63,6 +64,14 @@ const Login: React.FC = () => {
           className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-lg transition-transform duration-300">
           Login
         </button>
+
+        <p className="mt-4 text-center text-sm">
+        Don’t have an account?{" "}
+        <Link to="/register" className="text-indigo-600 font-medium hover:underline">
+        Register here
+        </Link>
+        </p>
+
       </form>
     </div>
   );
