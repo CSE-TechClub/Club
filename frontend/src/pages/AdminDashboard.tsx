@@ -29,6 +29,15 @@ function AdminDashboard() {
     difficulty: "Medium",
   });
 
+  const [news, setNews] = useState<any[]>([]);
+  const [newsInput, setNewsInput] = useState({
+    title: "",
+    link: "",
+    date: "",
+    image: "", // Add image input
+    description: "", // Add description input
+  });
+
   const stats: StatCard[] = [
     {
       title: "Total Members",
@@ -36,8 +45,18 @@ function AdminDashboard() {
       icon: Users,
       color: "text-google-blue",
     },
-    { title: "Active Quizzes", value: quizzes.length, icon: Brain, color: "text-google-red" },
-    { title: "Admin Count", value: 5, icon: Shield, color: "text-google-yellow" },
+    {
+      title: "Active Quizzes",
+      value: quizzes.length,
+      icon: Brain,
+      color: "text-google-red",
+    },
+    {
+      title: "Admin Count",
+      value: 5,
+      icon: Shield,
+      color: "text-google-yellow",
+    },
     {
       title: "Quiz Completions",
       value: 438,
@@ -46,12 +65,14 @@ function AdminDashboard() {
     },
   ];
 
-  // Load announcements & quizzes from localStorage
+  // Load announcements & quizzes & news from localStorage
   useEffect(() => {
     const storedAnnouncements = localStorage.getItem("announcements");
     const storedQuizzes = localStorage.getItem("quizzes");
+    const storedNews = localStorage.getItem("news");
     if (storedAnnouncements) setAnnouncements(JSON.parse(storedAnnouncements));
     if (storedQuizzes) setQuizzes(JSON.parse(storedQuizzes));
+    if (storedNews) setNews(JSON.parse(storedNews) || []); // Initialize to empty array if null
   }, []);
 
   const handleAnnouncementSubmit = () => {
@@ -94,6 +115,35 @@ function AdminDashboard() {
     const updated = quizzes.filter((_, i) => i !== index);
     setQuizzes(updated);
     localStorage.setItem("quizzes", JSON.stringify(updated));
+  };
+
+  const handleNewsInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setNewsInput({ ...newsInput, [name]: value });
+  };
+
+  const handleNewsSubmit = () => {
+    const { title, link, date, image, description } = newsInput;
+    if (title && link && date && image && description) {
+      const updatedNews = [...news, { title, link, date, image, description }];
+      setNews(updatedNews);
+      localStorage.setItem("news", JSON.stringify(updatedNews));
+      setNewsInput({
+        title: "",
+        link: "",
+        date: "",
+        image: "",
+        description: "",
+      });
+    }
+  };
+
+  const handleDeleteNews = (index: number) => {
+    const updatedNews = news.filter((_, i) => i !== index);
+    setNews(updatedNews);
+    localStorage.setItem("news", JSON.stringify(updatedNews));
   };
 
   return (
@@ -243,6 +293,81 @@ function AdminDashboard() {
                 <button
                   onClick={() => handleDeleteQuiz(index)}
                   className="text-red-500 ml-4"
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* News */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4">News</h2>
+          <input
+            type="text"
+            placeholder="Title"
+            name="title"
+            value={newsInput.title}
+            onChange={handleNewsInputChange}
+            className="w-full p-2 border rounded mb-2"
+          />
+          <input
+            type="text"
+            placeholder="Link for website"
+            name="link"
+            value={newsInput.link}
+            onChange={handleNewsInputChange}
+            className="w-full p-2 border rounded mb-2"
+          />
+          <input
+            type="date"
+            placeholder="Date"
+            name="date"
+            value={newsInput.date}
+            onChange={handleNewsInputChange}
+            className="w-full p-2 border rounded mb-2"
+          />
+          {/* Add input fields for image and description */}
+          <input
+            type="text"
+            placeholder="Image URL"
+            name="image"
+            value={newsInput.image}
+            onChange={handleNewsInputChange}
+            className="w-full p-2 border rounded mb-2"
+          />
+          <textarea
+            placeholder="Description"
+            name="description"
+            value={newsInput.description}
+            onChange={handleNewsInputChange}
+            className="w-full p-2 border rounded mb-4"
+          />
+          <button onClick={handleNewsSubmit} className="btn-primary">
+            Submit
+          </button>
+          <ul className="mt-4">
+            {news.map((item, index) => (
+              <li
+                key={index}
+                className="flex justify-between items-center p-2 border rounded mb-2"
+              >
+                <div>
+                  <span className="font-medium">{item.title}</span>
+                  <p className="text-gray-600 text-sm">Date: {item.date}</p>
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 text-sm hover:underline"
+                  >
+                    Visit Website
+                  </a>
+                </div>
+                <button
+                  onClick={() => handleDeleteNews(index)}
+                  className="text-red-500"
                 >
                   Delete
                 </button>

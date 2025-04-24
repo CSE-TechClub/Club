@@ -42,18 +42,32 @@ function Home() {
   const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
   const [paused, setPaused] = useState(false);
   const [fade, setFade] = useState(true);
+  const [news, setNews] = useState<any[]>([]);
 
-  // Load announcements from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem("announcements");
-    if (stored) {
+    // Load announcements from localStorage
+    const storedAnnouncements = localStorage.getItem("announcements");
+    if (storedAnnouncements) {
       try {
-        const parsed = JSON.parse(stored);
+        const parsed = JSON.parse(storedAnnouncements);
         if (Array.isArray(parsed)) {
           setAnnouncements(parsed);
         }
       } catch (err) {
         console.error("Failed to parse announcements:", err);
+      }
+    }
+
+    // Load news from localStorage
+    const storedNews = localStorage.getItem("news");
+    if (storedNews) {
+      try {
+        const parsedNews = JSON.parse(storedNews);
+        if (Array.isArray(parsedNews)) {
+          setNews(parsedNews);
+        }
+      } catch (err) {
+        console.error("Failed to parse news:", err);
       }
     }
   }, []);
@@ -98,8 +112,11 @@ function Home() {
         ))}
       </div>
 
+      {/* Announcements */}
       <div className="mt-16">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">Announcements📌</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          Announcements📌
+        </h2>
 
         {announcements.length > 0 ? (
           <div
@@ -115,6 +132,43 @@ function Home() {
           <p className="text-gray-500">No announcements available right now.</p>
         )}
       </div>
+
+      {/* News */}
+      {news.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Latest News📰
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {news.map((item, index) => (
+              <div key={index} className="bg-white rounded-lg shadow-md p-6">
+                <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
+                {item.image && (
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    className="w-full h-32 object-cover mb-2 rounded"
+                  />
+                )}
+                {item.description && (
+                  <p className="text-gray-600 text-sm mb-2">
+                    {item.description}
+                  </p>
+                )}
+                <p className="text-gray-600 text-sm mb-2">Date: {item.date}</p>
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 text-sm hover:underline"
+                >
+                  Read More
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
