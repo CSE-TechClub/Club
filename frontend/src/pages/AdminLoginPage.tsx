@@ -1,15 +1,14 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 
 interface LoginFormState {
-  USN: string;
-  password: string;
+  email: string;
+  passkey: string;
 }
 
-const Login: React.FC = () => {
+const AdminLogin: React.FC = () => {
   const [formData, setFormData] = useState<LoginFormState>({
-    USN: "",
-    password: "",
+    email: "",
+    passkey: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -27,20 +26,20 @@ const Login: React.FC = () => {
   return (
     <div className="max-w-md mx-auto mt-18 bg-white shadow-xl rounded-lg p-8 animate-slide-in">
       <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
-        Login
+        Admin Login
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
-            htmlFor="USN"
+            htmlFor="email"
             className="block text-gray-700 font-semibold mb-1"
           >
-            USN
+            Email
           </label>
           <input
-            type="USN"
-            name="USN"
-            value={formData.USN}
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-google.blue"
@@ -49,15 +48,15 @@ const Login: React.FC = () => {
 
         <div>
           <label
-            htmlFor="password"
+            htmlFor="passkey"
             className="block text-gray-700 font-semibold mb-1"
           >
-            Password
+            passkey
           </label>
           <input
             type="password"
-            name="password"
-            value={formData.password}
+            name="passkey"
+            value={formData.passkey}
             onChange={handleChange}
             required
             className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-google.red"
@@ -70,29 +69,9 @@ const Login: React.FC = () => {
         >
           Login
         </button>
-
-        <p className="mt-4 text-center text-sm">
-          Don’t have an account?{" "}
-          <Link
-            to="/register"
-            className="text-indigo-600 font-medium hover:underline"
-          >
-            Register here
-          </Link>
-        </p>
-
-        <p className="mt-4 text-center text-sm">
-          Are You Admin?{" "}
-          <Link
-            to="/adminlogin"
-            className="text-indigo-600 font-medium hover:underline"
-          >
-            Login here
-          </Link>
-        </p>
       </form>
     </div>
   );
 };
 
-export default Login;
+export default AdminLogin;

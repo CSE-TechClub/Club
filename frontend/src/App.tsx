@@ -14,6 +14,7 @@ import CyberSecBlog from './pages/CyberSecBlog';
 import Login from './pages/Login';
 import Register from './pages/register';
 import ProfilePage from './pages/Profile';
+import AdminLogin from './pages/AdminLoginPage'
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/adminlogin" element={<AdminLogin/>} />
           </Routes>
         </main>
         <Footer />
