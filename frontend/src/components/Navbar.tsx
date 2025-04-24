@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Brain, Shield, Home, Menu, X ,GitPullRequest} from 'lucide-react';
+import { Users, Brain, Shield, Home, Menu, X ,GitPullRequest, User} from 'lucide-react';
 import { clsx } from 'clsx';
 
 function Navbar() {
@@ -11,7 +11,8 @@ function Navbar() {
     { to: '/members', icon: Users, label: 'Members' },
     { to: '/quizzes', icon: Brain, label: 'Quizzes' },
     { to: '/leaderboard', icon: GitPullRequest , label: 'Leaderboard' },
-    { to: '/admin', icon: Shield, label: 'Admin' }
+    { to: '/admin', icon: Shield, label: 'Admin' },
+    { to: '/profile', icon: User, label: 'Profile'},
   ];
 
   return (
