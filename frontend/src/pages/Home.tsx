@@ -1,6 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Code2, Brain, Cpu, Shield } from "lucide-react";
+import { supabase } from "../supabaseClient";
+
+interface Quiz {
+  id: string;
+  name: string;
+  code: string;
+  link: string;
+  description: string;
+  difficulty: string;
+}
+interface NewsItem {
+  id: string;
+  title: string;
+  link: string;
+  date: string;
+  image: string;
+  description: string;
+}
 
 const subclubs = [
   {
@@ -37,58 +55,75 @@ const subclubs = [
   },
 ];
 
-function Home() {
+const Home: React.FC = () => {
+  const navigate = useNavigate();
+
+  // Announcement carousel state
   const [announcements, setAnnouncements] = useState<string[]>([]);
   const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
   const [paused, setPaused] = useState(false);
   const [fade, setFade] = useState(true);
-  const [news, setNews] = useState<any[]>([]);
 
+  // News & Quizzes
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+
+  // Fetch announcements + subscribe to realtime
   useEffect(() => {
-    // Load announcements from localStorage
-    const storedAnnouncements = localStorage.getItem("announcements");
-    if (storedAnnouncements) {
-      try {
-        const parsed = JSON.parse(storedAnnouncements);
-        if (Array.isArray(parsed)) {
-          setAnnouncements(parsed);
-        }
-      } catch (err) {
-        console.error("Failed to parse announcements:", err);
-      }
-    }
+    const fetchData = async () => {
+      // Auth guard
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return navigate("/login");
 
-    // Load news from localStorage
-    const storedNews = localStorage.getItem("news");
-    if (storedNews) {
-      try {
-        const parsedNews = JSON.parse(storedNews);
-        if (Array.isArray(parsedNews)) {
-          setNews(parsedNews);
-        }
-      } catch (err) {
-        console.error("Failed to parse news:", err);
+      // Fetch announcements
+      const { data: announcementsData } = await supabase
+        .from("announcements")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (announcementsData) {
+        setAnnouncements(announcementsData.map((a: any) => a.message));
       }
-    }
-  }, []);
 
-  // Handle announcement cycling with fade
+      // Fetch quizzes
+      const { data: quizzesData } = await supabase
+        .from("quizzes")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (quizzesData) {
+        setQuizzes(quizzesData as Quiz[]);
+      }
+
+      // Fetch news
+      const { data: newsData } = await supabase
+        .from("news")
+        .select("*")
+        .order("date", { ascending: false });
+      if (newsData) {
+        setNews(newsData as NewsItem[]);
+      }
+    };
+
+    fetchData();
+  }, [navigate]);
+
+  // Announcement carousel rotation
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (!paused && announcements.length > 0) {
-      interval = setInterval(() => {
-        setFade(false);
-        setTimeout(() => {
-          setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
-          setFade(true);
-        }, 300);
-      }, 4000);
-    }
-    return () => clearInterval(interval);
-  }, [paused, currentAnnouncement, announcements]);
+    if (paused || announcements.length === 0) return;
+    const iv = setInterval(() => {
+      setFade(false);
+      setTimeout(() => {
+        setCurrentAnnouncement((i) => (i + 1) % announcements.length);
+        setFade(true);
+      }, 300);
+    }, 4000);
+    return () => clearInterval(iv);
+  }, [paused, announcements]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* Hero */}
       <div className="text-center mb-12">
         <h1 className="text-4xl font-bold text-gray-900 mb-4">
           Welcome to Students Club
@@ -98,10 +133,11 @@ function Home() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {/* Sub-clubs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
         {subclubs.map((club) => (
           <Link to={club.link} key={club.name} className="group">
-            <div className="card hover:shadow-lg transition-shadow">
+            <div className="card hover:shadow-lg transition-shadow p-6">
               <div className={`${club.color} mb-4`}>
                 <club.icon className="h-12 w-12" />
               </div>
@@ -117,7 +153,6 @@ function Home() {
         <h2 className="text-2xl font-bold text-gray-900 mb-4">
           Announcements📌
         </h2>
-
         {announcements.length > 0 ? (
           <div
             onMouseEnter={() => setPaused(true)}
@@ -135,13 +170,13 @@ function Home() {
 
       {/* News */}
       {news.length > 0 && (
-        <div className="mt-8">
+        <div className="mt-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
             Latest News📰
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {news.map((item, index) => (
-              <div key={index} className="bg-white rounded-lg shadow-md p-6">
+            {news.map((item) => (
+              <div key={item.id} className="bg-white rounded-lg shadow-md p-6">
                 <h3 className="text-xl font-semibold mb-2">{item.title}</h3>
                 {item.image && (
                   <img
@@ -150,27 +185,39 @@ function Home() {
                     className="w-full h-32 object-cover mb-2 rounded"
                   />
                 )}
-                {item.description && (
-                  <p className="text-gray-600 text-sm mb-2">
-                    {item.description}
-                  </p>
-                )}
+                <p className="text-gray-600 text-sm mb-2">{item.description}</p>
                 <p className="text-gray-600 text-sm mb-2">Date: {item.date}</p>
-                <a
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <Link
+                  to={item.link}
                   className="text-blue-500 text-sm hover:underline"
                 >
                   Read More
-                </a>
+                </Link>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Quiz Quick Links */}
+      {quizzes.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Quick Quiz Links
+          </h2>
+          <ul className="list-disc list-inside space-y-2">
+            {quizzes.map((q) => (
+              <li key={q.id}>
+                <Link to={q.link} className="text-blue-500 hover:underline">
+                  {q.name} ({q.code})
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
-}
+};
 
 export default Home;

@@ -1,26 +1,44 @@
 import React, { useState } from "react";
-
-interface LoginFormState {
-  email: string;
-  passkey: string;
-}
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 const AdminLogin: React.FC = () => {
-  const [formData, setFormData] = useState<LoginFormState>({
-    email: "",
-    passkey: "",
-  });
+  const [email, setEmail] = useState("");
+  const [passkey, setPasskey] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
+    // 1. Attempt sign-in
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email,
+        password: passkey,
+      });
+
+    if (authError || !authData.user) {
+      setLoading(false);
+      return alert("Login failed: " + (authError?.message ?? "Unknown error"));
+    }
+
+    // 2. Verify role === "admin"
+    const { data: userRecord, error: roleError } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", authData.user.id)
+      .single();
+
+    setLoading(false);
+
+    if (roleError || !userRecord || userRecord.role !== "admin") {
+      return alert("Access denied. You are not an admin.");
+    }
+
+    // 3. Redirect to admin dashboard
+    navigate("/admin");
   };
 
   return (
@@ -37,10 +55,11 @@ const AdminLogin: React.FC = () => {
             Email
           </label>
           <input
-            type="email"
+            id="email"
             name="email"
-            value={formData.email}
-            onChange={handleChange}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
             className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-google.blue"
           />
@@ -51,13 +70,14 @@ const AdminLogin: React.FC = () => {
             htmlFor="passkey"
             className="block text-gray-700 font-semibold mb-1"
           >
-            passkey
+            Passkey
           </label>
           <input
-            type="password"
+            id="passkey"
             name="passkey"
-            value={formData.passkey}
-            onChange={handleChange}
+            type="password"
+            value={passkey}
+            onChange={(e) => setPasskey(e.target.value)}
             required
             className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-google.red"
           />
@@ -65,9 +85,10 @@ const AdminLogin: React.FC = () => {
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-lg transition-transform duration-300"
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-lg transition-transform duration-300 disabled:opacity-50"
         >
-          Login
+          {loading ? "Logging in…" : "Login as Admin"}
         </button>
       </form>
     </div>
