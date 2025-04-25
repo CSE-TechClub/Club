@@ -63,7 +63,7 @@ const Websites = [
     contributors: ["Gagan T P", "Abhilash T K", "Harshitha A M", "Bindu A C"],
     descritption:
       "Engage in meaningful discussions, share knowledge, and collaborate with the community. To use the forum, make sure you have a valid email address and a secure password to register or log in.",
-    link: "https://jananyajanu.github.io/Zomato-Landing-Page/",
+    link: "https://discuza.in/login",
   },
   {
     title: "ChartWise",
