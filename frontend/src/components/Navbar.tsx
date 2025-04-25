@@ -1,18 +1,37 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Brain, Shield, Home, Menu, X ,GitPullRequest, User} from 'lucide-react';
+import { Users, Brain, Shield, Home, Menu, X, GitPullRequest, User } from 'lucide-react';
 import { clsx } from 'clsx';
+import { supabase } from '../supabaseClient';
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const getRole = async () => {
+      const { data: sessionData } = await supabase.auth.getUser();
+      const user = sessionData.user;
+      if (user) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        if (!error && data) setUserRole(data.role);
+      }
+    };
+
+    getRole();
+  }, []);
 
   const navLinks = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/members', icon: Users, label: 'Members' },
     { to: '/quizzes', icon: Brain, label: 'Quizzes' },
-    { to: '/leaderboard', icon: GitPullRequest , label: 'Leaderboard' },
-    { to: '/admin', icon: Shield, label: 'Admin' },
-    { to: '/profile', icon: User, label: 'Profile'},
+    { to: '/leaderboard', icon: GitPullRequest, label: 'Leaderboard' },
+    ...(userRole === 'admin' ? [{ to: '/admin', icon: Shield, label: 'Admin' }] : []),
+    { to: '/profile', icon: User, label: 'Profile' },
   ];
 
   return (
@@ -27,14 +46,14 @@ function Navbar() {
               </span>
             </Link>
           </div>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             {navLinks.map((link) => (
               <Link
                 key={link.label}
                 to={link.to}
-                className="nav-link transition-colors duration-200"
+                className="nav-link transition-colors duration-200 flex items-center space-x-1"
               >
                 <link.icon className="h-5 w-5" />
                 <span>{link.label}</span>
@@ -48,11 +67,7 @@ function Navbar() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             >
-              {isMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
+              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>

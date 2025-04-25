@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Clock, Award, Brain } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 interface Quiz {
   name: string;
@@ -14,15 +15,18 @@ function Quizzes() {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem("quizzes");
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) setQuizzes(parsed);
-      } catch (err) {
-        console.error("Failed to load quizzes:", err);
+    const fetchQuizzes = async () => {
+      const { data, error } = await supabase
+        .from('quizzes')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (data && !error) {
+        setQuizzes(data);
       }
-    }
+    };
+
+    fetchQuizzes();
   }, []);
 
   const filteredQuizzes = quizzes.filter((quiz) =>

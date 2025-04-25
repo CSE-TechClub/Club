@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 interface LoginFormState {
   USN: string;
@@ -11,17 +12,50 @@ const Login: React.FC = () => {
     USN: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
+
+    const { USN, password } = formData;
+
+    // 1. Fetch email & role by USN
+    const { data: userRecord, error: lookupError } = await supabase
+      .from("users")
+      .select("email, role")
+      .eq("usn", USN)
+      .single();
+
+    if (lookupError || !userRecord) {
+      setLoading(false);
+      return alert("USN not found. Please check your USN or register first.");
+    }
+
+    // 2. Sign in with Supabase Auth
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: userRecord.email,
+      password,
+    });
+
+    setLoading(false);
+
+    if (authError) {
+      return alert("Login failed: " + authError.message);
+    }
+
+    // 3. Redirect based on role
+    if (userRecord.role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/");
+    }
   };
 
   return (
@@ -38,8 +72,9 @@ const Login: React.FC = () => {
             USN
           </label>
           <input
-            type="USN"
+            id="USN"
             name="USN"
+            type="text"
             value={formData.USN}
             onChange={handleChange}
             required
@@ -55,8 +90,9 @@ const Login: React.FC = () => {
             Password
           </label>
           <input
-            type="password"
+            id="password"
             name="password"
+            type="password"
             value={formData.password}
             onChange={handleChange}
             required
@@ -66,9 +102,10 @@ const Login: React.FC = () => {
 
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-lg transition-transform duration-300"
+          disabled={loading}
+          className="w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold py-2 rounded-lg shadow-md hover:scale-[1.02] hover:shadow-lg transition-transform duration-300 disabled:opacity-50"
         >
-          Login
+          {loading ? "Logging in…" : "Login"}
         </button>
 
         <p className="mt-4 text-center text-sm">
@@ -81,13 +118,13 @@ const Login: React.FC = () => {
           </Link>
         </p>
 
-        <p className="mt-4 text-center text-sm">
-          Are You Admin?{" "}
+        <p className="mt-2 text-center text-sm">
+          Are you an admin?{" "}
           <Link
             to="/adminlogin"
             className="text-indigo-600 font-medium hover:underline"
           >
-            Login here
+            Admin Login
           </Link>
         </p>
       </form>
