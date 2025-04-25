@@ -55,6 +55,50 @@ const subclubs = [
   },
 ];
 
+const Websites = [
+  {
+    title: "Discuza Forum",
+    imgurl:
+      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgZoD-qhoyKJOMX9-7qr3L2OGEl0VsXTvJ7A&s",
+    contributors: ["Gagan T P", "Abhilash T K", "Harshitha A M", "Bindu A C"],
+    descritption:
+      "Engage in meaningful discussions, share knowledge, and collaborate with the community. To use the forum, make sure you have a valid email address and a secure password to register or log in.",
+    link: "https://discuza.in/login",
+  },
+  {
+    title: "ChartWise",
+    imgurl:
+      "https://stom-breaker-07.github.io/Dynamic_DataViz/assets/pink-AgZdhpKt.jpg",
+    contributors: ["Chinmay L"],
+    descritption:
+      "The Smart Way to Visualize DataExperience the power of interactive and dynamic charting with multiple graph types and real-time data manipulation.",
+    link: "https://stom-breaker-07.github.io/Dynamic_DataViz/",
+  },
+  {
+    title: "RupeeTracker",
+    imgurl: "https://rupeetracker.vercel.app/assets/icons/logo.svg",
+    contributors: ["Rudresh "],
+    descritption:
+      "This is the platform where the people can easily trrack thier product price from E-COMMERCE WEBSITE like AMAZON FLIPKART ( currently this website working only on AMAZON) this platform Helps users or customers to aviod business strategies of E-COMMERCE company by giving fake offers",
+    link: "https://rupeetracker.vercel.app/ ",
+  },
+  {
+    title: "Techie Notes",
+    imgurl: "https://kit-student-web.vercel.app/assets/book-bE_zQ1KF.svg",
+    contributors: ["Rudresh M"],
+    descritption:
+      "Techie notes is the one stop platform for all VTU students they can easily find their notes VTU circles and other VTU notifications",
+    link: "https://kit-student-web.vercel.app/home ",
+  },
+  // {
+  //   title: "",
+  //   imgurl: "",
+  //   contributors: [""],
+  //   descritption: "",
+  //   link: " ",
+  // },
+];
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
@@ -198,6 +242,57 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Hosted Websites */}
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          Hosted websites
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Websites.map((website) => (
+            <div
+              key={website.title}
+              className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 w-full aspect-square flex flex-col"
+            >
+              {/* Image Section with Full Gradient Overlay */}
+              <div className="relative w-full h-2/3">
+                <img
+                  src={website.imgurl}
+                  alt={website.title}
+                  className="w-full h-full object-cover"
+                />
+
+                {/* Full Overlay Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+
+                {/* Text Content Over Gradient */}
+                <div className="absolute bottom-0 w-full px-4 py-3 z-10">
+                  <h3 className="text-white text-md font-semibold">
+                    {website.title}
+                  </h3>
+                  <p className="text-white text-xs">{website.descritption}</p>
+                  <p className="text-blue-200 text-xs">
+                    {website.contributors.join(" | ")}
+                  </p>
+                </div>
+              </div>
+
+              {/* Button Section */}
+              <div className="flex-1 flex items-center justify-center px-4 py-3">
+                <a
+                  href={website.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded hover:bg-blue-600 transition"
+                >
+                  Click to View
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Quiz Quick Links */}
       {quizzes.length > 0 && (
