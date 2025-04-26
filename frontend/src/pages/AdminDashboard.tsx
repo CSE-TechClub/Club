@@ -1,3 +1,4 @@
+// --- existing imports ---
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -9,7 +10,9 @@ import {
   Settings,
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
+import { mockMembers } from "../pages/Members";
 
+// --- types ---
 interface StatCard {
   title: string;
   value: number;
@@ -34,6 +37,7 @@ interface NewsItem {
   description: string;
 }
 
+// --- component ---
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
 
@@ -59,21 +63,18 @@ const AdminDashboard: React.FC = () => {
     description: "",
   });
 
-  const stats: StatCard[] = [
-    { title: "Total Members", value: 156, icon: Users, color: "text-google-blue" },
-    { title: "Active Quizzes", value: quizzes.length, icon: Brain, color: "text-google-red" },
-    { title: "Admin Count", value: 5, icon: Shield, color: "text-google-yellow" },
-    { title: "Quiz Completions", value: 438, icon: TrendingUp, color: "text-google-green" },
-  ];
+  const [totalMembers, setTotalMembers] = useState(0);
+  const [quizCompletions, setQuizCompletions] = useState(0);
+  const [adminCount, setAdminCount] = useState(0);
 
-  // 1. On mount: guard and fetch all data
+  // fetch data
   useEffect(() => {
     const fetchData = async () => {
-      // Auth guard
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return navigate("/login");
 
-      // Fetch announcements
       const { data: announcementsData } = await supabase
         .from("announcements")
         .select("*")
@@ -82,7 +83,6 @@ const AdminDashboard: React.FC = () => {
         setAnnouncements(announcementsData.map((a: any) => a.message));
       }
 
-      // Fetch quizzes
       const { data: quizzesData } = await supabase
         .from("quizzes")
         .select("*")
@@ -91,7 +91,6 @@ const AdminDashboard: React.FC = () => {
         setQuizzes(quizzesData as Quiz[]);
       }
 
-      // Fetch news
       const { data: newsData } = await supabase
         .from("news")
         .select("*")
@@ -99,12 +98,37 @@ const AdminDashboard: React.FC = () => {
       if (newsData) {
         setNews(newsData as NewsItem[]);
       }
+
+      const { count: memberCount } = await supabase
+        .from("users")
+        .select("id", { count: "exact", head: true });
+      if (typeof memberCount === "number") {
+        setTotalMembers(memberCount);
+      }
+
+      // fetch from quiz_stats instead of quizzes
+      const { data: statsData, error: statsError } = await supabase
+        .from("quiz_stats")
+        .select("total_quiz_insertions")
+        .eq("id", 1)
+        .single();
+      if (!statsError && statsData) {
+        setQuizCompletions(statsData.total_quiz_insertions);
+      }
+
+      setAdminCount(mockMembers.length);
     };
 
     fetchData();
   }, [navigate]);
 
-  // Handlers
+  const stats: StatCard[] = [
+    { title: "Total Users", value: totalMembers, icon: Users, color: "text-google-blue" },
+    { title: "Active Quizzes", value: quizzes.length, icon: Brain, color: "text-google-red" },
+    { title: "Member Count", value: adminCount, icon: Shield, color: "text-google-yellow" },
+    { title: "Quiz Completions", value: quizCompletions, icon: TrendingUp, color: "text-google-green" },
+  ];
+
   const handleAnnouncementSubmit = async () => {
     if (announcementInput.trim()) {
       const { error } = await supabase
@@ -131,12 +155,50 @@ const AdminDashboard: React.FC = () => {
   const handleQuizSubmit = async () => {
     const { name, code, link, responseLink, description, difficulty } = quizInput;
     if (name && code && link && responseLink && description && difficulty) {
-      const { error } = await supabase
+      // 1. Insert the quiz
+      const { data: inserted, error: insertError } = await supabase
         .from("quizzes")
-        .insert([{ name, code, link, responseLink, description, difficulty }]);
-      if (!error) {
-        setQuizzes([{ name, code, link, responseLink, description, difficulty }, ...quizzes]);
-        setQuizInput({ name: "", code: "", link: "", responseLink: "", description: "", difficulty: "Medium" });
+        .insert([{ name, code, link, responseLink, description, difficulty }])
+        .select();
+
+      if (insertError) {
+        console.error("Insert failed:", insertError);
+        return;
+      }
+
+      setQuizzes([{ name, code, link, responseLink, description, difficulty }, ...quizzes]);
+      setQuizInput({
+        name: "",
+        code: "",
+        link: "",
+        responseLink: "",
+        description: "",
+        difficulty: "Medium",
+      });
+
+      // 2. Increment quiz_stats count
+      const { data: statsData, error: statsError } = await supabase
+        .from("quiz_stats")
+        .select("total_quiz_insertions")
+        .eq("id", 1)
+        .single();
+
+      if (statsError || !statsData) {
+        console.error("Failed to fetch stats:", statsError);
+        return;
+      }
+
+      const newCount = statsData.total_quiz_insertions + 1;
+
+      const { error: updateError } = await supabase
+        .from("quiz_stats")
+        .update({ total_quiz_insertions: newCount })
+        .eq("id", 1);
+
+      if (updateError) {
+        console.error("Failed to update stats:", updateError);
+      } else {
+        setQuizCompletions(newCount);
       }
     }
   };
@@ -149,6 +211,7 @@ const AdminDashboard: React.FC = () => {
       .eq("code", quiz.code);
     if (!error) {
       setQuizzes(quizzes.filter((_, i) => i !== index));
+      // Do NOT decrement quiz_stats
     }
   };
 
@@ -160,7 +223,13 @@ const AdminDashboard: React.FC = () => {
         .insert([{ title, link, date, image, description }]);
       if (!error) {
         setNews([{ title, link, date, image, description }, ...news]);
-        setNewsInput({ title: "", link: "", date: "", image: "", description: "" });
+        setNewsInput({
+          title: "",
+          link: "",
+          date: "",
+          image: "",
+          description: "",
+        });
       }
     }
   };
@@ -183,10 +252,12 @@ const AdminDashboard: React.FC = () => {
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
         <div className="flex space-x-4">
           <button className="btn-primary flex items-center space-x-2">
-            <UserPlus className="h-5 w-5" /><span>Add Admin</span>
+            <UserPlus className="h-5 w-5" />
+            <span>Add Admin</span>
           </button>
           <button className="btn-primary flex items-center space-x-2">
-            <Settings className="h-5 w-5" /><span>Settings</span>
+            <Settings className="h-5 w-5" />
+            <span>Settings</span>
           </button>
         </div>
       </div>
@@ -204,6 +275,7 @@ const AdminDashboard: React.FC = () => {
         ))}
       </div>
 
+      {/* Content */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Announcements */}
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -214,16 +286,12 @@ const AdminDashboard: React.FC = () => {
             placeholder="Type an announcement..."
             className="w-full p-2 border rounded mb-4"
           />
-          <button onClick={handleAnnouncementSubmit} className="btn-primary">
-            Submit
-          </button>
+          <button onClick={handleAnnouncementSubmit} className="btn-primary">Submit</button>
           <ul className="mt-4">
             {announcements.map((msg, i) => (
               <li key={i} className="flex justify-between items-center p-2 border rounded mb-2">
                 {msg}
-                <button onClick={() => handleDeleteAnnouncement(i)} className="text-red-500">
-                  Delete
-                </button>
+                <button onClick={() => handleDeleteAnnouncement(i)} className="text-red-500">Delete</button>
               </li>
             ))}
           </ul>
@@ -270,17 +338,25 @@ const AdminDashboard: React.FC = () => {
                 <div>
                   <span className="font-medium">{q.name} ({q.code})</span>
                   <p className="italic text-sm text-gray-600">Difficulty: {q.difficulty}</p>
+                  <p className="text-sm">
+                    <a
+                      href={q.responseLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      View Responses
+                    </a>
+                  </p>
                 </div>
-                <button onClick={() => handleDeleteQuiz(i)} className="text-red-500">
-                  Delete
-                </button>
+                <button onClick={() => handleDeleteQuiz(i)} className="text-red-500">Delete</button>
               </li>
             ))}
           </ul>
         </div>
 
         {/* News */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 col-span-full">
           <h2 className="text-xl font-semibold mb-4">News</h2>
           {Object.entries(newsInput).map(([field, val]) =>
             field !== "description" ? (
@@ -310,9 +386,7 @@ const AdminDashboard: React.FC = () => {
                   <span className="font-medium">{n.title}</span>
                   <p className="text-gray-600 text-sm">Date: {n.date}</p>
                 </div>
-                <button onClick={() => handleDeleteNews(i)} className="text-red-500">
-                  Delete
-                </button>
+                <button onClick={() => handleDeleteNews(i)} className="text-red-500">Delete</button>
               </li>
             ))}
           </ul>
