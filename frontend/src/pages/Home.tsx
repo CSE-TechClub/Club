@@ -360,7 +360,7 @@ const Home: React.FC = () => {
               rel="noopener noreferrer"
               className="text-blue-600 text-sm font-medium hover:underline group-hover:animate-pulse" // Pulse on hover
             >
-              Watch Now →
+              Watch Now 
             </a>
           </div>
         </div>
