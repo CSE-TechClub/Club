@@ -36,6 +36,11 @@ interface NewsItem {
   image: string;
   description: string;
 }
+interface MoviesItem {
+  title: string;
+  link: string;
+  image: string;
+}
 
 // --- component ---
 const AdminDashboard: React.FC = () => {
@@ -63,9 +68,16 @@ const AdminDashboard: React.FC = () => {
     description: "",
   });
 
+  const [moviesInput, setMoviesInput] = useState<MoviesItem>({
+    title: "",
+    link: "",
+    image: "",
+  });
+
   const [totalMembers, setTotalMembers] = useState(0);
   const [quizCompletions, setQuizCompletions] = useState(0);
   const [adminCount, setAdminCount] = useState(0);
+  const [movies, setMovies] = useState<MoviesItem[]>([]);
 
   // fetch data
   useEffect(() => {
@@ -123,10 +135,30 @@ const AdminDashboard: React.FC = () => {
   }, [navigate]);
 
   const stats: StatCard[] = [
-    { title: "Total Users", value: totalMembers, icon: Users, color: "text-google-blue" },
-    { title: "Active Quizzes", value: quizzes.length, icon: Brain, color: "text-google-red" },
-    { title: "Member Count", value: adminCount, icon: Shield, color: "text-google-yellow" },
-    { title: "Quiz Completions", value: quizCompletions, icon: TrendingUp, color: "text-google-green" },
+    {
+      title: "Total Users",
+      value: totalMembers,
+      icon: Users,
+      color: "text-google-blue",
+    },
+    {
+      title: "Active Quizzes",
+      value: quizzes.length,
+      icon: Brain,
+      color: "text-google-red",
+    },
+    {
+      title: "Member Count",
+      value: adminCount,
+      icon: Shield,
+      color: "text-google-yellow",
+    },
+    {
+      title: "Quiz Completions",
+      value: quizCompletions,
+      icon: TrendingUp,
+      color: "text-google-green",
+    },
   ];
 
   const handleAnnouncementSubmit = async () => {
@@ -153,7 +185,8 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleQuizSubmit = async () => {
-    const { name, code, link, responseLink, description, difficulty } = quizInput;
+    const { name, code, link, responseLink, description, difficulty } =
+      quizInput;
     if (name && code && link && responseLink && description && difficulty) {
       // 1. Insert the quiz
       const { data: inserted, error: insertError } = await supabase
@@ -166,7 +199,10 @@ const AdminDashboard: React.FC = () => {
         return;
       }
 
-      setQuizzes([{ name, code, link, responseLink, description, difficulty }, ...quizzes]);
+      setQuizzes([
+        { name, code, link, responseLink, description, difficulty },
+        ...quizzes,
+      ]);
       setQuizInput({
         name: "",
         code: "",
@@ -215,6 +251,34 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const handleMoviesSubmit = async () => {
+    const { title, link, image } = moviesInput;
+    if (title && link && image) {
+      const newMovie = {
+        title,
+        link,
+        image,
+      };
+      const { error } = await supabase.from("movies").insert([newMovie]);
+      if (!error) {
+        setMovies([newMovie, ...movies]);
+        setMoviesInput({
+          title: "",
+          link: "",
+          image: "",
+        });
+      }
+    }
+  };
+
+  const handleDeleteMovie = async (index: number) => {
+    const { title } = movies[index];
+    const { error } = await supabase.from("movies").delete().eq("id", title);
+    if (!error) {
+      setMovies(movies.filter((_, i) => i !== index));
+    }
+  };
+
   const handleNewsSubmit = async () => {
     const { title, link, date, image, description } = newsInput;
     if (title && link && date && image && description) {
@@ -236,10 +300,7 @@ const AdminDashboard: React.FC = () => {
 
   const handleDeleteNews = async (index: number) => {
     const { title } = news[index];
-    const { error } = await supabase
-      .from("news")
-      .delete()
-      .eq("title", title);
+    const { error } = await supabase.from("news").delete().eq("title", title);
     if (!error) {
       setNews(news.filter((_, i) => i !== index));
     }
@@ -268,7 +329,9 @@ const AdminDashboard: React.FC = () => {
           <div key={stat.title} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
               <stat.icon className={`h-8 w-8 ${stat.color}`} />
-              <span className="text-2xl font-bold text-gray-900">{stat.value}</span>
+              <span className="text-2xl font-bold text-gray-900">
+                {stat.value}
+              </span>
             </div>
             <h3 className="text-lg font-medium text-gray-600">{stat.title}</h3>
           </div>
@@ -286,12 +349,22 @@ const AdminDashboard: React.FC = () => {
             placeholder="Type an announcement..."
             className="w-full p-2 border rounded mb-4"
           />
-          <button onClick={handleAnnouncementSubmit} className="btn-primary">Submit</button>
+          <button onClick={handleAnnouncementSubmit} className="btn-primary">
+            Submit
+          </button>
           <ul className="mt-4">
             {announcements.map((msg, i) => (
-              <li key={i} className="flex justify-between items-center p-2 border rounded mb-2">
+              <li
+                key={i}
+                className="flex justify-between items-center p-2 border rounded mb-2"
+              >
                 {msg}
-                <button onClick={() => handleDeleteAnnouncement(i)} className="text-red-500">Delete</button>
+                <button
+                  onClick={() => handleDeleteAnnouncement(i)}
+                  className="text-red-500"
+                >
+                  Delete
+                </button>
               </li>
             ))}
           </ul>
@@ -307,7 +380,9 @@ const AdminDashboard: React.FC = () => {
                 type="text"
                 placeholder={field}
                 value={(quizInput as any)[field]}
-                onChange={(e) => setQuizInput({ ...quizInput, [field]: e.target.value })}
+                onChange={(e) =>
+                  setQuizInput({ ...quizInput, [field]: e.target.value })
+                }
                 className="w-full p-2 border rounded mb-2"
               />
             ) : field === "description" ? (
@@ -315,14 +390,18 @@ const AdminDashboard: React.FC = () => {
                 key={field}
                 placeholder="Description"
                 value={quizInput.description}
-                onChange={(e) => setQuizInput({ ...quizInput, description: e.target.value })}
+                onChange={(e) =>
+                  setQuizInput({ ...quizInput, description: e.target.value })
+                }
                 className="w-full p-2 border rounded mb-2"
               />
             ) : (
               <select
                 key={field}
                 value={quizInput.difficulty}
-                onChange={(e) => setQuizInput({ ...quizInput, difficulty: e.target.value })}
+                onChange={(e) =>
+                  setQuizInput({ ...quizInput, difficulty: e.target.value })
+                }
                 className="w-full p-2 border rounded mb-4"
               >
                 <option>Easy</option>
@@ -331,13 +410,22 @@ const AdminDashboard: React.FC = () => {
               </select>
             )
           )}
-          <button onClick={handleQuizSubmit} className="btn-primary">Submit</button>
+          <button onClick={handleQuizSubmit} className="btn-primary">
+            Submit
+          </button>
           <ul className="mt-4">
             {quizzes.map((q, i) => (
-              <li key={i} className="flex justify-between items-center p-2 border rounded mb-2">
+              <li
+                key={i}
+                className="flex justify-between items-center p-2 border rounded mb-2"
+              >
                 <div>
-                  <span className="font-medium">{q.name} ({q.code})</span>
-                  <p className="italic text-sm text-gray-600">Difficulty: {q.difficulty}</p>
+                  <span className="font-medium">
+                    {q.name} ({q.code})
+                  </span>
+                  <p className="italic text-sm text-gray-600">
+                    Difficulty: {q.difficulty}
+                  </p>
                   <p className="text-sm">
                     <a
                       href={q.responseLink}
@@ -349,14 +437,19 @@ const AdminDashboard: React.FC = () => {
                     </a>
                   </p>
                 </div>
-                <button onClick={() => handleDeleteQuiz(i)} className="text-red-500">Delete</button>
+                <button
+                  onClick={() => handleDeleteQuiz(i)}
+                  className="text-red-500"
+                >
+                  Delete
+                </button>
               </li>
             ))}
           </ul>
         </div>
 
         {/* News */}
-        <div className="bg-white rounded-lg shadow-md p-6 col-span-full">
+        <div className="bg-white rounded-lg shadow-md p-6 ">
           <h2 className="text-xl font-semibold mb-4">News</h2>
           {Object.entries(newsInput).map(([field, val]) =>
             field !== "description" ? (
@@ -365,7 +458,9 @@ const AdminDashboard: React.FC = () => {
                 type={field === "date" ? "date" : "text"}
                 placeholder={field}
                 value={(newsInput as any)[field]}
-                onChange={(e) => setNewsInput({ ...newsInput, [field]: e.target.value })}
+                onChange={(e) =>
+                  setNewsInput({ ...newsInput, [field]: e.target.value })
+                }
                 className="w-full p-2 border rounded mb-2"
               />
             ) : (
@@ -373,20 +468,77 @@ const AdminDashboard: React.FC = () => {
                 key={field}
                 placeholder="Description"
                 value={newsInput.description}
-                onChange={(e) => setNewsInput({ ...newsInput, description: e.target.value })}
+                onChange={(e) =>
+                  setNewsInput({ ...newsInput, description: e.target.value })
+                }
                 className="w-full p-2 border rounded mb-4"
               />
             )
           )}
-          <button onClick={handleNewsSubmit} className="btn-primary">Submit</button>
+          <button onClick={handleNewsSubmit} className="btn-primary">
+            Submit
+          </button>
           <ul className="mt-4">
             {news.map((n, i) => (
-              <li key={i} className="flex justify-between items-center p-2 border rounded mb-2">
+              <li
+                key={i}
+                className="flex justify-between items-center p-2 border rounded mb-2"
+              >
                 <div>
                   <span className="font-medium">{n.title}</span>
                   <p className="text-gray-600 text-sm">Date: {n.date}</p>
                 </div>
-                <button onClick={() => handleDeleteNews(i)} className="text-red-500">Delete</button>
+                <button
+                  onClick={() => handleDeleteNews(i)}
+                  className="text-red-500"
+                >
+                  Delete
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Movies */}
+        <div className="bg-white rounded-lg shadow-md p-6 ">
+          <h2 className="text-xl font-semibold mb-4">Suggestions</h2>
+          {Object.entries(moviesInput).map(([field, val]) => (
+            <input
+              key={field}
+              type="text"
+              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+              value={val}
+              onChange={(e) =>
+                setMoviesInput({ ...moviesInput, [field]: e.target.value })
+              }
+              className="w-full p-2 border rounded mb-2"
+            />
+          ))}
+          <button onClick={handleMoviesSubmit} className="btn-primary">
+            Submit
+          </button>
+
+          <ul className="mt-4">
+            {movies.map((m, i) => (
+              <li
+                key={i}
+                className="flex justify-between items-center p-2 border rounded mb-2"
+              >
+                <div>
+                  <span className="font-medium">{m.title}</span>
+                  <p className="text-gray-600 text-sm">Link: {m.link}</p>
+                  <img
+                    src={m.image}
+                    alt={m.title}
+                    className="w-16 h-16 object-cover mt-2"
+                  />
+                </div>
+                <button
+                  onClick={() => handleDeleteMovie(i)}
+                  className="text-red-500"
+                >
+                  Delete
+                </button>
               </li>
             ))}
           </ul>

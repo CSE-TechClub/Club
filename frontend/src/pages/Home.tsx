@@ -19,12 +19,12 @@ interface NewsItem {
   image: string;
   description: string;
 }
-// interface MovieItem {
-//   id: string;
-//   title: string;
-//   link: string;
-//   image: string;
-// }
+interface MovieItem {
+  id: string;
+  title: string;
+  link: string;
+  image: string;
+}
 
 const subclubs = [
   {
@@ -61,14 +61,14 @@ const subclubs = [
   },
 ];
 
-const movies = [
-  {
-    title: "Radhe shyam",
-    image:
-      "https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/Radhe_Shyam.jpg/250px-Radhe_Shyam.jpg",
-    link: "https://www.primevideo.com/region/eu/detail/Radhe-Shyam-Telugu/0QXK16A045FAMGI21LGHGK0X9U",
-  },
-];
+// const movies = [
+//   {
+//     title: "Radhe shyam",
+//     image:
+//       "https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/Radhe_Shyam.jpg/250px-Radhe_Shyam.jpg",
+//     link: "https://www.primevideo.com/region/eu/detail/Radhe-Shyam-Telugu/0QXK16A045FAMGI21LGHGK0X9U",
+//   },
+// ];
 
 const Websites = [
   {
@@ -126,7 +126,7 @@ const Home: React.FC = () => {
   // News & Quizzes & Movies
   const [news, setNews] = useState<NewsItem[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  // const [movies, setMovies] = useState<MovieItem[]>([]);
+  const [movies, setMovies] = useState<MovieItem[]>([]);
 
   // Fetch announcements + subscribe to realtime
   useEffect(() => {
@@ -162,6 +162,15 @@ const Home: React.FC = () => {
         .order("date", { ascending: false });
       if (newsData) {
         setNews(newsData as NewsItem[]);
+      }
+
+      //fetch movies
+      const { data: moviesData } = await supabase
+        .from("movies")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (moviesData) {
+        setMovies(moviesData as MovieItem[]);
       }
     };
 
@@ -316,29 +325,27 @@ const Home: React.FC = () => {
       {movies.length > 0 && (
         <div className="mt-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Suggestion of the week
+            Suggestion of the Week🎬
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {movies.map((movie) => (
               <div
-                key={movie.title}
+                key={movie.id}
                 className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 w-full flex flex-col"
               >
-                {/* Image Section with Full Gradient Overlay */}
+                {/* Image Section */}
                 <div className="relative w-full h-64">
                   <img
                     src={movie.image}
                     alt={movie.title}
-                    className="w-full h-full overflow-hidden"
+                    className="w-full h-full object-cover"
                   />
-
-                  {/* Full Overlay Gradient */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-white/70 to-transparent"></div>
-
-                  {/* Text Content Over Gradient */}
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  {/* Text Content */}
                   <div className="absolute bottom-0 w-full px-4 py-2 z-10">
-                    <h3 className="text-black text-md font-semibold">
+                    <h3 className="text-white text-md font-semibold">
                       {movie.title}
                     </h3>
                   </div>
@@ -346,13 +353,14 @@ const Home: React.FC = () => {
 
                 {/* Button Section */}
                 <div className="px-4 py-3 flex items-center justify-center">
-                  <p className="text-lg text-gray-700 ">Watch Now </p>
-                  <Link
-                    to={movie.link}
-                    className="text-blue-500 text-sm hover:underline mx-2"
+                  <a
+                    href={movie.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-blue-500 text-white text-xs font-bold rounded-full px-3 py-2 flex items-center justify-center hover:bg-blue-600 transition"
                   >
-                    in
-                  </Link>
+                    Watch Now
+                  </a>
                 </div>
               </div>
             ))}
