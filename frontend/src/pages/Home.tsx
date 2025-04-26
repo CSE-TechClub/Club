@@ -19,7 +19,7 @@ interface NewsItem {
   image: string;
   description: string;
 }
-interface MovieItem {
+interface SuggestionItem {
   id: string;
   title: string;
   link: string;
@@ -126,7 +126,7 @@ const Home: React.FC = () => {
   // News & Quizzes & Movies
   const [news, setNews] = useState<NewsItem[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [movies, setMovies] = useState<MovieItem[]>([]);
+  const [movies, setMovies] = useState<SuggestionItem[]>([]);
 
   // Fetch announcements + subscribe to realtime
   useEffect(() => {
@@ -170,7 +170,7 @@ const Home: React.FC = () => {
         .select("*")
         .order("created_at", { ascending: false });
       if (moviesData) {
-        setMovies(moviesData as MovieItem[]);
+        setMovies(moviesData as SuggestionItem[]);
       }
     };
 
@@ -272,7 +272,7 @@ const Home: React.FC = () => {
       {Websites.length > 0 && (
         <div className="mt-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Hosted websites
+            Students sites 🌐
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -323,50 +323,54 @@ const Home: React.FC = () => {
 
       {/* Movie links */}
       {movies.length > 0 && (
-        <div className="mt-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
-            Suggestion of the Week🎬
-          </h2>
+  <div className="mt-8">
+    <h2 className="text-2xl font-bold text-gray-900 mb-4">
+       Inspire & Innovate 🎬
+    </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {movies.map((movie) => (
-              <div
-                key={movie.id}
-                className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 w-full flex flex-col"
-              >
-                {/* Image Section */}
-                <div className="relative w-full h-64">
-                  <img
-                    src={movie.image}
-                    alt={movie.title}
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                  {/* Text Content */}
-                  <div className="absolute bottom-0 w-full px-4 py-2 z-10">
-                    <h3 className="text-white text-md font-semibold">
-                      {movie.title}
-                    </h3>
-                  </div>
-                </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {movies.map((movie) => (
+        <div
+          key={movie.id}
+          className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2 transform transition-all duration-300 w-full flex flex-col group" // group added
+        >
+          {/* Image Section */}
+          <div className="relative w-full h-56 overflow-hidden">
+            <img
+              src={movie.image}
+              alt={movie.title}
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" // Zoom on hover
+            />
+            {/* Dark Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
 
-                {/* Button Section */}
-                <div className="px-4 py-3 flex items-center justify-center">
-                  <a
-                    href={movie.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-blue-500 text-white text-xs font-bold rounded-full px-3 py-2 flex items-center justify-center hover:bg-blue-600 transition"
-                  >
-                    Watch Now
-                  </a>
-                </div>
-              </div>
-            ))}
+            {/* Movie Title over the image */}
+            <div className="absolute bottom-0 w-full px-4 py-2 z-10">
+              <h3 className="text-white text-2xl font-semibold truncate">
+                {movie.title}
+              </h3>
+            </div>
+          </div>
+
+          {/* Link Section */}
+          <div className="px-4 py-2 flex items-center justify-center bg-white">
+            <a
+              href={movie.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 text-sm font-medium hover:underline group-hover:animate-pulse" // Pulse on hover
+            >
+              Watch Now 
+            </a>
           </div>
         </div>
-      )}
+      ))}
+    </div>
+  </div>
+)}
+
+
+
 
       {/* Quiz Quick Links */}
       {quizzes.length > 0 && (
