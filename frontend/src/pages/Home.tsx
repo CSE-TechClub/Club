@@ -19,6 +19,12 @@ interface NewsItem {
   image: string;
   description: string;
 }
+interface MovieItem {
+  id: string;
+  title: string;
+  link: string;
+  image: string;
+}
 
 const subclubs = [
   {
@@ -54,6 +60,15 @@ const subclubs = [
     link: "/cyber",
   },
 ];
+
+// const movies = [
+//   {
+//     title: "Radhe shyam",
+//     image:
+//       "https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/Radhe_Shyam.jpg/250px-Radhe_Shyam.jpg",
+//     link: "https://www.primevideo.com/region/eu/detail/Radhe-Shyam-Telugu/0QXK16A045FAMGI21LGHGK0X9U",
+//   },
+// ];
 
 const Websites = [
   {
@@ -108,9 +123,10 @@ const Home: React.FC = () => {
   const [paused, setPaused] = useState(false);
   const [fade, setFade] = useState(true);
 
-  // News & Quizzes
+  // News & Quizzes & Movies
   const [news, setNews] = useState<NewsItem[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
+  const [movies, setMovies] = useState<MovieItem[]>([]);
 
   // Fetch announcements + subscribe to realtime
   useEffect(() => {
@@ -146,6 +162,15 @@ const Home: React.FC = () => {
         .order("date", { ascending: false });
       if (newsData) {
         setNews(newsData as NewsItem[]);
+      }
+
+      //fetch movies
+      const { data: moviesData } = await supabase
+        .from("movies")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (moviesData) {
+        setMovies(moviesData as MovieItem[]);
       }
     };
 
@@ -244,55 +269,104 @@ const Home: React.FC = () => {
       )}
 
       {/* Hosted Websites */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-4">
-          Hosted websites
-        </h2>
+      {Websites.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Hosted websites
+          </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Websites.map((website) => (
-            <div
-              key={website.title}
-              className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 w-full aspect-square flex flex-col"
-            >
-              {/* Image Section with Full Gradient Overlay */}
-              <div className="relative w-full h-2/3">
-                <img
-                  src={website.imgurl}
-                  alt={website.title}
-                  className="w-full h-full object-cover"
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Websites.map((website) => (
+              <div
+                key={website.title}
+                className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 w-full aspect-square flex flex-col"
+              >
+                {/* Image Section with Full Gradient Overlay */}
+                <div className="relative w-full h-2/3">
+                  <img
+                    src={website.imgurl}
+                    alt={website.title}
+                    className="w-full h-full object-cover"
+                  />
 
-                {/* Full Overlay Gradient */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                  {/* Full Overlay Gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
 
-                {/* Text Content Over Gradient */}
-                <div className="absolute bottom-0 w-full px-4 py-3 z-10">
-                  <h3 className="text-white text-md font-semibold">
-                    {website.title}
-                  </h3>
-                  <p className="text-white text-xs">{website.descritption}</p>
-                  <p className="text-blue-200 text-xs">
-                    {website.contributors.join(" | ")}
-                  </p>
+                  {/* Text Content Over Gradient */}
+                  <div className="absolute bottom-0 w-full px-4 py-3 z-10">
+                    <h3 className="text-white text-md font-semibold">
+                      {website.title}
+                    </h3>
+                    <p className="text-white text-xs">{website.descritption}</p>
+                    <p className="text-blue-200 text-xs">
+                      {website.contributors.join(" | ")}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Button Section */}
+                <div className="flex-1 flex items-center justify-center px-4 py-3">
+                  <a
+                    href={website.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded hover:bg-blue-600 transition"
+                  >
+                    Click to View
+                  </a>
                 </div>
               </div>
-
-              {/* Button Section */}
-              <div className="flex-1 flex items-center justify-center px-4 py-3">
-                <a
-                  href={website.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded hover:bg-blue-600 transition"
-                >
-                  Click to View
-                </a>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Movie links */}
+      {movies.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Suggestion of the Week🎬
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {movies.map((movie) => (
+              <div
+                key={movie.id}
+                className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-lg transition duration-300 w-full flex flex-col"
+              >
+                {/* Image Section */}
+                <div className="relative w-full h-64">
+                  <img
+                    src={movie.image}
+                    alt={movie.title}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  {/* Text Content */}
+                  <div className="absolute bottom-0 w-full px-4 py-2 z-10">
+                    <h3 className="text-white text-md font-semibold">
+                      {movie.title}
+                    </h3>
+                  </div>
+                </div>
+
+                {/* Button Section */}
+                <div className="px-4 py-3 flex items-center justify-center">
+                  <a
+                    href={movie.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-blue-500 text-white text-xs font-bold rounded-full px-3 py-2 flex items-center justify-center hover:bg-blue-600 transition"
+                  >
+                    Watch Now
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Quiz Quick Links */}
       {quizzes.length > 0 && (
