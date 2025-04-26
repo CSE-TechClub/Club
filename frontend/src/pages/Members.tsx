@@ -26,10 +26,10 @@ function Members() {
     {
       id: "15",
       name: "Gagan T P",
-      role: "volunteer",
+      role: "Lead",
       email: "placeholder3@example.com",
       linkedinUrl:"https://www.linkedin.com/in/gagan-tp-62ab89259/",
-      bio: " Full-Stack Developer | Club volunteer",
+      bio: " Full-Stack Developer | Cyber Scholars Lead",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5603AQHi1JlCsLbddg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724480102399?e=1750896000&v=beta&t=-BCktKXDhStfyFi9njfSg3S5Qvi2VrGTQ7qLdpj0Oc0",
     },
@@ -50,7 +50,7 @@ function Members() {
       role: "admin",
       email: "placeholder4@example.com",
       linkedinUrl: "https://www.linkedin.com/in/chinmay-l-39416125b/",
-      bio: "Lead Developer | Club volunteer",
+      bio: "Lead Developer | Dev Dynamos Lead",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5603AQFoQkq8L7VPyg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1729454804974?e=1750896000&v=beta&t=Lx1R-1af2zlHN3HBjmigWPwyGaKozvr5i0Mtg41WkXg",
     },
