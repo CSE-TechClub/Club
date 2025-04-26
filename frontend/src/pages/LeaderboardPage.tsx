@@ -31,7 +31,7 @@ export function LeaderboardPage() {
           Contributor Leaderboard
         </h1>
         <p className="text-xl text-gray-600">
-          Celebrating the awesome people behind our contributions!
+          Celebrating the awesome people behind our work!
         </p>
       </div>
 
