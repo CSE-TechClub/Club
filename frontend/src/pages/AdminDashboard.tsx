@@ -36,7 +36,7 @@ interface NewsItem {
   image: string;
   description: string;
 }
-interface MoviesItem {
+interface SuggestionItem {
   title: string;
   link: string;
   image: string;
@@ -68,7 +68,7 @@ const AdminDashboard: React.FC = () => {
     description: "",
   });
 
-  const [moviesInput, setMoviesInput] = useState<MoviesItem>({
+  const [moviesInput, setMoviesInput] = useState<SuggestionItem>({
     title: "",
     link: "",
     image: "",
@@ -77,7 +77,7 @@ const AdminDashboard: React.FC = () => {
   const [totalMembers, setTotalMembers] = useState(0);
   const [quizCompletions, setQuizCompletions] = useState(0);
   const [adminCount, setAdminCount] = useState(0);
-  const [movies, setMovies] = useState<MoviesItem[]>([]);
+  const [movies, setMovies] = useState<SuggestionItem[]>([]);
 
   // fetch data
   useEffect(() => {
@@ -109,6 +109,15 @@ const AdminDashboard: React.FC = () => {
         .order("date", { ascending: false });
       if (newsData) {
         setNews(newsData as NewsItem[]);
+      }
+
+      const { data: moviesData } = await supabase
+       .from("movies")
+       .select("*")
+       .order("created_at", { ascending: false });
+
+      if (moviesData) {
+        setMovies(moviesData as SuggestionItem[]);
       }
 
       const { count: memberCount } = await supabase
@@ -254,26 +263,18 @@ const AdminDashboard: React.FC = () => {
   const handleMoviesSubmit = async () => {
     const { title, link, image } = moviesInput;
     if (title && link && image) {
-      const newMovie = {
-        title,
-        link,
-        image,
-      };
+      const newMovie = { title, link, image };
       const { error } = await supabase.from("movies").insert([newMovie]);
       if (!error) {
         setMovies([newMovie, ...movies]);
-        setMoviesInput({
-          title: "",
-          link: "",
-          image: "",
-        });
+        setMoviesInput({ title: "", link: "", image: "" });
       }
     }
   };
 
   const handleDeleteMovie = async (index: number) => {
     const { title } = movies[index];
-    const { error } = await supabase.from("movies").delete().eq("id", title);
+    const { error } = await supabase.from("movies").delete().eq("title", title);
     if (!error) {
       setMovies(movies.filter((_, i) => i !== index));
     }
