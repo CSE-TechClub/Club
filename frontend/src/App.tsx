@@ -16,6 +16,8 @@ import Login from './pages/Login';
 import Register from './pages/register';
 import ProfilePage from './pages/Profile';
 import AdminLogin from './pages/AdminLoginPage';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 function AppWrapper() {
   return (
@@ -53,7 +55,7 @@ function App() {
   }
 
   // Define paths where Navbar should be hidden
-  const hideNavbarOnRoutes = ['/login', '/register', '/adminlogin'];
+  const hideNavbarOnRoutes = ['/login', '/register', '/adminlogin','/reset-password','/forgotpasword'];
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
@@ -73,6 +75,8 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/adminlogin" element={<AdminLogin />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </main>
       <Footer />
