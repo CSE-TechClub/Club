@@ -100,6 +100,15 @@ const Login: React.FC = () => {
           />
         </div>
 
+        <div className="text-right">
+          <Link
+            to="/forgot-password"
+            className="text-sm text-indigo-600 hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
+
         <button
           type="submit"
           disabled={loading}
@@ -109,7 +118,7 @@ const Login: React.FC = () => {
         </button>
 
         <p className="mt-4 text-center text-sm">
-          Don’t have an account?{" "}
+          Don't have an account?{" "}
           <Link
             to="/register"
             className="text-indigo-600 font-medium hover:underline"
