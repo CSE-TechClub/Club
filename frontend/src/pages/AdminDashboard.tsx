@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import {
   Users,
   Brain,
-  Shield,
+  UserCircle2,
   TrendingUp,
   UserPlus,
   Settings,
+  Users2,
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { mockMembers } from "../pages/Members";
@@ -145,9 +146,9 @@ const AdminDashboard: React.FC = () => {
 
   const stats: StatCard[] = [
     {
-      title: "Total Users",
+      title: "Users",
       value: totalMembers,
-      icon: Users,
+      icon: UserCircle2 ,
       color: "text-google-blue",
     },
     {
@@ -157,9 +158,9 @@ const AdminDashboard: React.FC = () => {
       color: "text-google-red",
     },
     {
-      title: "Member Count",
+      title: "Members",
       value: adminCount,
-      icon: Shield,
+      icon:Users,
       color: "text-google-yellow",
     },
     {
@@ -313,19 +314,19 @@ const AdminDashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
         <div className="flex space-x-4">
-          <button className="btn-primary flex items-center space-x-2">
+          <button className="btn-primary flex items-center space-x-2" onClick={() => window.open("https://supabase.com/dashboard/projects", "_blank")}>
             <UserPlus className="h-5 w-5" />
             <span>Add Admin</span>
           </button>
-          <button className="btn-primary flex items-center space-x-2">
+          <button className="btn-primary flex items-center space-x-2" onClick={() => window.open("https://github.com/CSE-TechClub/Club", "_blank")}>
             <Settings className="h-5 w-5" />
-            <span>Settings</span>
+            <span>GitHub</span>
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
           <div key={stat.title} className="bg-white rounded-lg shadow-md p-6">
             <div className="flex items-center justify-between mb-4">
@@ -527,7 +528,6 @@ const AdminDashboard: React.FC = () => {
               >
                 <div>
                   <span className="font-medium">{m.title}</span>
-                  <p className="text-gray-600 text-sm">Link: {m.link}</p>
                   <img
                     src={m.image}
                     alt={m.title}
