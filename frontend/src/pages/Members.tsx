@@ -7,7 +7,7 @@ export const mockMembers = [
     name: "Keerthana M",
     role: "Lead",
     email: "placeholder1@example.com",
-    linkedinUrl: "https://www.linkedin.com/in/keerthanam",
+    linkedinUrl: "https://www.linkedin.com/in/keerthanakeerthana/",
     bio: "AI Avengers Lead",
     imageUrl:
       "https://media.licdn.com/dms/image/v2/D5603AQFchHgvr5EM8g/profile-displayphoto-shrink_800_800/B56ZWOUX19HQAg-/0/1741849466834?e=1748476800&v=beta&t=haOxkAlDMNjhuQoN9-lJNQigWLUxaMe6YzfvUuXyS8Y",
@@ -17,10 +17,10 @@ export const mockMembers = [
     name: "Jananya K H",
     role: "Lead",
     email: "placeholder2@example.com",
-    linkedinUrl: "https://www.linkedin.com/in/jananyakh",
+    linkedinUrl: "https://www.linkedin.com/in/jananya-k-h/",
     bio: "Web Wizards Lead ",
     imageUrl:
-      "https://media.licdn.com/dms/image/v2/D5603AQFU18ErvH4aLQ/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1685717116449?e=1748476800&v=beta&t=ThRZSe3-n3FdAIMXtCRQV7PNxp_zTm15DAM1J4jX9Ao",
+      "https://media.licdn.com/dms/image/v2/D5603AQFJC5pNMZf6Jw/profile-displayphoto-shrink_200_200/B56ZaUFcVmHAAc-/0/1746241179055?e=1751500800&v=beta&t=JzPtt3AzwqWoEaeqsig3IvK0E7d5qf7f6yZ365uJX-Y",
   },
   {
     id: "15",
@@ -40,7 +40,7 @@ export const mockMembers = [
     linkedinUrl:"https://www.linkedin.com/in/jones-samuel-859b9024b/",
     bio: "Backend Developer | Club volunteer",
     imageUrl:
-      "https://media.licdn.com/dms/image/v2/D5635AQEQkWsFwxzjYw/profile-framedphoto-shrink_800_800/B56ZWhubfbHEAg-/0/1742175058306?e=1746216000&v=beta&t=LQXyOMzBjZH4lI7qD4Y6cbDmTFIR-AjK4dHLUwB9frE",
+      "https://media.licdn.com/dms/image/v2/D5635AQEQkWsFwxzjYw/profile-framedphoto-shrink_200_200/B56ZWhubfbHEAY-/0/1742175058345?e=1746892800&v=beta&t=dow16dJwxvD442D09tmG0r1OBtxpnYZ0dlo9AGfBY1s",
   },
 
   {
@@ -62,7 +62,8 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/vidya-p-b-03955a25b",
       bio: "Club volunteer",
       imageUrl:
-      "https://media.licdn.com/dms/image/v2/D5635AQGo-XIyXsIMZQ/profile-framedphoto-shrink_800_800/B56ZXEVxkPHsAg-/0/1742755797579?e=1746216000&v=beta&t=l-eCD4qj4JGduQqIDFIhYW0jWIYbDm9JOLyTNa6jhBY",
+      "https://media.licdn.com/dms/image/v2/D5635AQGo-XIyXsIMZQ/profile-framedphoto-shrink_200_200/B56ZXEVxkPHsAY-/0/1742755797560?e=1746892800&v=beta&t=8Dbbr8rukCcMRm-jIIghb2VT4q_tui4rNDq61800paI",
+      
     },
     {
       id: "6",
@@ -82,7 +83,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/sapna-kamthane-0661b5269",
       bio: "Club volunteer",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5635AQGGwrsleX6PuA/profile-framedphoto-shrink_800_800/B56ZWj3r5ZGQAg-/0/1742211039200?e=1746216000&v=beta&t=F8HxDr41-GojO_cQ-9W7P9TlocupmStk7nAzQ5Hu7r8",
+        "https://media.licdn.com/dms/image/v2/D5635AQGGwrsleX6PuA/profile-framedphoto-shrink_200_200/B56ZWj3r5ZGQAY-/0/1742211039200?e=1746892800&v=beta&t=Y6hUEFUoy9WQWMJ8ap80wBW5IG-tu_a2mzNSM6RvThw",
     },
     {
       id: "8",
@@ -92,7 +93,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/rudresh-manjunath21/",
       bio: "Club volunteer | Phase-Changers Lead",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5635AQG-89qG5DZL9Q/profile-framedphoto-shrink_800_800/profile-framedphoto-shrink_800_800/0/1724616225632?e=1746216000&v=beta&t=1MQjTE_GxfRhB4j11xwM0gTtA_MEy7xjEGiF_OeZ3-g",
+        "https://media.licdn.com/dms/image/v2/D5635AQG-89qG5DZL9Q/profile-framedphoto-shrink_200_200/profile-framedphoto-shrink_200_200/0/1724616225632?e=1746892800&v=beta&t=Kiwa8LJXIfBEq4KW-gKzjA80AgUgW8KS2-WhUwF1yjM",
     },
     {
       id: "9",
@@ -112,7 +113,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/pragathi-s-9a558b25b",
       bio: "Club volunteer",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5603AQGRBzUN17vGwQ/profile-displayphoto-shrink_800_800/B56ZXGOZSdHsAg-/0/1742787418509?e=1748476800&v=beta&t=77FDTzdHQBUKxpsLOQath7bAAntJaPWS96JAheZi2W8",
+        "https://media.licdn.com/dms/image/v2/D5603AQGRBzUN17vGwQ/profile-displayphoto-shrink_200_200/B56ZXGOZSdHsAc-/0/1742787418509?e=1751500800&v=beta&t=6W4MOC__MKUUKQfZAbuZp4cThejHR1ZnJR4LE_nQmyk",
     },
     {
       id: "11",
@@ -122,7 +123,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/bhavyashree-k-p-4329b6259/",
       bio: "Club volunteer",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5603AQEnmQzMcdakPA/profile-displayphoto-shrink_800_800/B56ZXSvqMcHoAc-/0/1742997470161?e=1750291200&v=beta&t=gYn2VhtWvHz4ez-Os3SYmJlq-VwESsZvc9o3q0yxQvU",
+        "https://media.licdn.com/dms/image/v2/D5603AQEnmQzMcdakPA/profile-displayphoto-shrink_200_200/B56ZXSvqMcHoAY-/0/1742997470143?e=1751500800&v=beta&t=ZQ7G9WKrbtqI5p1K6TqeMgw7i9SfhIkxkK-rDpoQYXc",
     },
     {
       id: "12",
@@ -132,7 +133,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/nisarga-t-k-a3b67425b/",
       bio: "Club volunteer",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5635AQHs89v88Rtbqw/profile-framedphoto-shrink_800_800/profile-framedphoto-shrink_800_800/0/1733333581911?e=1746216000&v=beta&t=_OxrPv9h_kHpapXDKtlgGEuyU38l-hW3O9dsdwV_gPs",
+        "https://media.licdn.com/dms/image/v2/D5635AQHs89v88Rtbqw/profile-framedphoto-shrink_200_200/profile-framedphoto-shrink_200_200/0/1733333581911?e=1746892800&v=beta&t=MUW-XLgkWTL7a3ipE37pZe0kXEHo9Mj_rcR1148pVw4",
     },
     {
       id: "13",
@@ -144,16 +145,7 @@ export const mockMembers = [
       imageUrl:
         "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
     },
-    {
-      id: "14",
-      name: "Narthana M D",
-      role: "Club volunteer",
-      email: "placeholder10@example.com",
-      linkedinUrl: "https://www.linkedin.com/in/narthana-m-d-7450a925a/",
-      bio: "Club volunteer",
-      imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5635AQEcaI5U-zL39g/profile-framedphoto-shrink_800_800/B56ZWjF4dPGUAk-/0/1742197983424?e=1746216000&v=beta&t=9bVIUHp8a60kejKUNBe-gJovyVLM1Aai2cketOhbWnU",
-    }
+    
 ];
 function Members() {
  
