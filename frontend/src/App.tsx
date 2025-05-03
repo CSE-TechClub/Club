@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -31,45 +31,35 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const location = useLocation();
-  const navigate = useNavigate();
-
-  const publicRoutes = ['/login', '/register', '/adminlogin', '/reset-password', '/forgot-password'];
 
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
       setIsAuthenticated(!!data.session);
       setLoading(false);
-
-      if (!data.session && !publicRoutes.includes(location.pathname)) {
-        navigate('/login');
-      }
     };
 
     checkSession();
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session);
-
-      if (!session && !publicRoutes.includes(location.pathname)) {
-        navigate('/login');
-      }
     });
 
     return () => {
       listener?.subscription.unsubscribe();
     };
-  }, [location.pathname, navigate]);
+  }, []);
 
   if (loading) {
     return <div className="text-center py-20">Loading...</div>;
   }
 
-  const hideNavbarOnRoutes = ['/login', '/register', '/adminlogin', '/reset-password', '/forgot-password'];
+  // Define paths where Navbar should be hidden
+  const hideNavbarOnRoutes = ['/login', '/register', '/adminlogin','/reset-password','/forgotpasword'];
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      {!hideNavbarOnRoutes.includes(location.pathname) && <Navbar />}
+      {!hideNavbarOnRoutes.includes(location.pathname) && isAuthenticated && <Navbar />}
       <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12 animate-fade-in">
         <Routes>
           <Route path="/" element={<Home />} />
