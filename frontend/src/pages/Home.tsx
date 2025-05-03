@@ -149,55 +149,56 @@ const Home: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
 
-  // Inside the Home function:
-
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  let deferredPrompt: any = null;
-  
+
+  // Check if already installed
+  useEffect(() => {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallPrompt(false);
+    }
+  }, []);
+
+  // Handle beforeinstallprompt event
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
-      deferredPrompt = e;
-      setShowInstallPrompt(true); // Show the install button
+      setDeferredPrompt(e);
+      setShowInstallPrompt(true);
     };
-  
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
-  
-  const handleInstallClick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User installed the app');
-        } else {
-          console.log('User dismissed the install');
-        }
-        setShowInstallPrompt(false);
-        deferredPrompt = null;
-      });
-    }
-  };
-  
 
+  // Register service worker (optional but recommended)
   useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      setShowInstallPrompt(false); // Don't show prompt if already installed
-    }
-  }, []);
-
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker
-        .register("/service-worker.js")
-        .then(() => console.log("Service Worker Registered"))
-        .catch((err) => console.error("Service Worker Error:", err));
+        .register('/service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch((err) => console.error('Service Worker Error:', err));
     }
   }, []);
+
+  const handleInstallClick = () => {
+    if (!deferredPrompt) return;
+
+    deferredPrompt.prompt();
+
+    deferredPrompt.userChoice.then((choiceResult: any) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User installed the app');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      setShowInstallPrompt(false);
+      setDeferredPrompt(null);
+    });
+  }
 
   const stats: StatCard[] = [
     {
