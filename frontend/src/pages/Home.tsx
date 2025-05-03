@@ -93,7 +93,7 @@ const Websites = [
     title: "Discuza Forum",
     imgurl:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgZoD-qhoyKJOMX9-7qr3L2OGEl0VsXTvJ7A&s",
-    contributors: ["Gagan TP","Abhilash TK"],
+    contributors: ["Gagan TP", "Abhilash TK"],
     descritption:
       "Engage in meaningful discussions, share knowledge, and collaborate with the community. To use the forum, make sure you have a valid email address and a secure password to register or log in.",
     link: "https://discuza.in/login",
@@ -149,6 +149,49 @@ const Home: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
 
+  // Inside the Home function:
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault(); // Prevent automatic prompt
+      setDeferredPrompt(e); // Save the event
+      setShowInstallPrompt(true); // Show the custom prompt
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+    };
+  }, []);
+
+  useEffect(() => {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+        setShowInstallPrompt(false); // Don't show prompt if already installed
+    }
+}, []);
+
+
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt(); // Show the install prompt
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === "accepted") {
+          console.log("User accepted the PWA installation");
+        } else {
+          console.log("User dismissed the PWA installation");
+        }
+        setDeferredPrompt(null); // Clear the saved prompt
+        setShowInstallPrompt(false); // Hide the custom prompt
+      });
+    }
+  };
+
   const stats: StatCard[] = [
     {
       title: "Users",
@@ -179,29 +222,28 @@ const Home: React.FC = () => {
   const AnimatedStat = ({ value }: { value: number }) => {
     const count = useMotionValue(0);
     const rounded = useTransform(count, (latest) => Math.round(latest));
-  
+
     useEffect(() => {
       const controls = animate(count, value, {
         duration: 1,
         ease: "easeOut",
       });
-  
+
       return controls.stop; // cleanup
     }, [count, value]);
-  
+
     return (
       <motion.span className="text-xl font-semibold text-gray-900">
         {rounded}
       </motion.span>
     );
   };
-  
-  
+
   // Fetch announcements + subscribe to realtime
   useEffect(() => {
     const fetchData = async () => {
       // ✨ Existing fetch code ✨
-  
+
       // Fetch announcements
       const { data: announcementsData } = await supabase
         .from("announcements")
@@ -210,7 +252,7 @@ const Home: React.FC = () => {
       if (announcementsData) {
         setAnnouncements(announcementsData.map((a: any) => a.message));
       }
-  
+
       // Fetch quizzes
       const { data: quizzesData } = await supabase
         .from("quizzes")
@@ -219,7 +261,7 @@ const Home: React.FC = () => {
       if (quizzesData) {
         setQuizzes(quizzesData as Quiz[]);
       }
-  
+
       // Fetch news
       const { data: newsData } = await supabase
         .from("news")
@@ -228,7 +270,7 @@ const Home: React.FC = () => {
       if (newsData) {
         setNews(newsData as NewsItem[]);
       }
-  
+
       // Fetch movies
       const { data: moviesData } = await supabase
         .from("movies")
@@ -237,9 +279,9 @@ const Home: React.FC = () => {
       if (moviesData) {
         setMovies(moviesData as SuggestionItem[]);
       }
-  
+
       // ✨ ✨ ✨ New added code starts here ✨ ✨ ✨
-  
+
       // Fetch total members
       const { count: memberCount } = await supabase
         .from("users")
@@ -247,7 +289,7 @@ const Home: React.FC = () => {
       if (typeof memberCount === "number") {
         setTotalMembers(memberCount);
       }
-  
+
       // Fetch quiz completions
       const { data: statsData, error: statsError } = await supabase
         .from("quiz_stats")
@@ -257,16 +299,16 @@ const Home: React.FC = () => {
       if (!statsError && statsData) {
         setQuizCompletions(statsData.total_quiz_insertions);
       }
-  
+
       // Set admin count
       setAdminCount(mockMembers.length);
-  
+
       // ✨ ✨ ✨ New added code ends here ✨ ✨ ✨
     };
-  
+
     fetchData();
   }, [navigate]);
-  
+
   // Announcement carousel rotation
   useEffect(() => {
     if (paused || announcements.length === 0) return;
@@ -291,6 +333,24 @@ const Home: React.FC = () => {
           Join our community of passionate learners and innovators
         </p>
       </div>
+
+      {showInstallPrompt && (
+        <div className="fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-md shadow-lg z-50">
+          <p className="mb-2">Install this app for a better experience!</p>
+          <button
+            onClick={handleInstallClick}
+            className="bg-white text-blue-500 px-4 py-2 rounded-md hover:bg-gray-200"
+          >
+            Install App
+          </button>
+          <button
+            onClick={() => setShowInstallPrompt(false)}
+            className="text-white ml-4 underline"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Sub-clubs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
@@ -331,18 +391,20 @@ const Home: React.FC = () => {
       <div className="mt-16">
         <h2 className="text-3xl text-gray-900 my-8 text-center"></h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        {stats.map((stat) => (
-          <div key={stat.title} className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between mb-4">
-              <stat.icon className={`h-6 w-6 ${stat.color}`} />
-              <span className="text-2xl  text-gray-900">
-              <AnimatedStat value={stat.value} />
-              </span>
+          {stats.map((stat) => (
+            <div key={stat.title} className="bg-white rounded-lg shadow-md p-6">
+              <div className="flex items-center justify-between mb-4">
+                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                <span className="text-2xl  text-gray-900">
+                  <AnimatedStat value={stat.value} />
+                </span>
+              </div>
+              <h3 className="text-md font-medium text-gray-600">
+                {stat.title}
+              </h3>
             </div>
-            <h3 className="text-md font-medium text-gray-600">{stat.title}</h3>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
       </div>
 
       {/* News */}
@@ -375,7 +437,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       )}
-
 
       {/* Movie links */}
       {movies.length > 0 && (
@@ -425,7 +486,6 @@ const Home: React.FC = () => {
         </div>
       )}
 
-
       {/* Hosted Websites */}
       {Websites.length > 0 && (
         <div className="mt-8">
@@ -471,14 +531,12 @@ const Home: React.FC = () => {
                   >
                     Visit Website
                   </a>
-                </div>                
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
-
-
 
       {/* Quiz Quick Links */}
       {quizzes.length > 0 && (
