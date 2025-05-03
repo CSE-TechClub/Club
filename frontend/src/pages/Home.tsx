@@ -149,56 +149,55 @@ const Home: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
 
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  // Inside the Home function:
+
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-
-  // Check if already installed
-  useEffect(() => {
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setShowInstallPrompt(false);
-    }
-  }, []);
-
-  // Handle beforeinstallprompt event
+  let deferredPrompt: any = null;
+  
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
-      setDeferredPrompt(e);
-      setShowInstallPrompt(true);
+      deferredPrompt = e;
+      setShowInstallPrompt(true); // Show the install button
     };
-
+  
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-
+  
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
+  
+  const handleInstallClick = () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then((choiceResult: any) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User installed the app');
+        } else {
+          console.log('User dismissed the install');
+        }
+        setShowInstallPrompt(false);
+        deferredPrompt = null;
+      });
+    }
+  };
+  
 
-  // Register service worker (optional but recommended)
   useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/service-worker.js')
-        .then(() => console.log('Service Worker Registered'))
-        .catch((err) => console.error('Service Worker Error:', err));
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setShowInstallPrompt(false); // Don't show prompt if already installed
     }
   }, []);
 
-  const handleInstallClick = () => {
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-
-    deferredPrompt.userChoice.then((choiceResult: any) => {
-      if (choiceResult.outcome === 'accepted') {
-        console.log('User installed the app');
-      } else {
-        console.log('User dismissed the install prompt');
-      }
-      setShowInstallPrompt(false);
-      setDeferredPrompt(null);
-    });
-  }
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch((err) => console.error("Service Worker Error:", err));
+    }
+  }, []);
 
   const stats: StatCard[] = [
     {
