@@ -150,47 +150,54 @@ const Home: React.FC = () => {
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
 
   // Inside the Home function:
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
   const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-
+  let deferredPrompt: any = null;
+  
   useEffect(() => {
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault(); // Prevent automatic prompt
-      setDeferredPrompt(e); // Save the event
-      setShowInstallPrompt(true); // Show the custom prompt
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      setShowInstallPrompt(true); // Show the install button
     };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
+  
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  
     return () => {
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt
-      );
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
-
-  useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-        setShowInstallPrompt(false); // Don't show prompt if already installed
-    }
-}, []);
-
-
+  
   const handleInstallClick = () => {
     if (deferredPrompt) {
-      deferredPrompt.prompt(); // Show the install prompt
+      deferredPrompt.prompt();
       deferredPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === "accepted") {
-          console.log("User accepted the PWA installation");
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User installed the app');
         } else {
-          console.log("User dismissed the PWA installation");
+          console.log('User dismissed the install');
         }
-        setDeferredPrompt(null); // Clear the saved prompt
-        setShowInstallPrompt(false); // Hide the custom prompt
+        setShowInstallPrompt(false);
+        deferredPrompt = null;
       });
     }
   };
+  
+
+  useEffect(() => {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
+      setShowInstallPrompt(false); // Don't show prompt if already installed
+    }
+  }, []);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/service-worker.js")
+        .then(() => console.log("Service Worker Registered"))
+        .catch((err) => console.error("Service Worker Error:", err));
+    }
+  }, []);
 
   const stats: StatCard[] = [
     {
