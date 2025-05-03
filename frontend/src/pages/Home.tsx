@@ -149,56 +149,6 @@ const Home: React.FC = () => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
 
-  // Inside the Home function:
-
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
-  let deferredPrompt: any = null;
-  
-  useEffect(() => {
-    const handleBeforeInstallPrompt = (e: any) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      setShowInstallPrompt(true); // Show the install button
-    };
-  
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-  
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    };
-  }, []);
-  
-  const handleInstallClick = () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then((choiceResult: any) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User installed the app');
-        } else {
-          console.log('User dismissed the install');
-        }
-        setShowInstallPrompt(false);
-        deferredPrompt = null;
-      });
-    }
-  };
-  
-
-  useEffect(() => {
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      setShowInstallPrompt(false); // Don't show prompt if already installed
-    }
-  }, []);
-
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker
-        .register("/service-worker.js")
-        .then(() => console.log("Service Worker Registered"))
-        .catch((err) => console.error("Service Worker Error:", err));
-    }
-  }, []);
-
   const stats: StatCard[] = [
     {
       title: "Users",
@@ -341,23 +291,6 @@ const Home: React.FC = () => {
         </p>
       </div>
 
-      {showInstallPrompt && (
-        <div className="fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-md shadow-lg z-50">
-          <p className="mb-2">Install this app for a better experience!</p>
-          <button
-            onClick={handleInstallClick}
-            className="bg-white text-blue-500 px-4 py-2 rounded-md hover:bg-gray-200"
-          >
-            Install App
-          </button>
-          <button
-            onClick={() => setShowInstallPrompt(false)}
-            className="text-white ml-4 underline"
-          >
-            Dismiss
-          </button>
-        </div>
-      )}
 
       {/* Sub-clubs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
