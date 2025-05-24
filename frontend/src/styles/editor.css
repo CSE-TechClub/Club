@@ -1,0 +1,108 @@
+.ProseMirror {
+  min-height: 400px;
+  padding: 1rem;
+  outline: none;
+  overflow-x: hidden;
+  word-wrap: break-word;
+}
+
+.ProseMirror p {
+  margin: 1em 0;
+  word-wrap: break-word;
+}
+
+.ProseMirror h1 {
+  font-size: clamp(1.5rem, 4vw, 2em);
+  font-weight: bold;
+  margin: 0.67em 0;
+  word-wrap: break-word;
+}
+
+.ProseMirror h2 {
+  font-size: clamp(1.25rem, 3vw, 1.5em);
+  font-weight: bold;
+  margin: 0.83em 0;
+  word-wrap: break-word;
+}
+
+.ProseMirror ul, .ProseMirror ol {
+  padding-left: 1.5em;
+  margin: 1em 0;
+  word-wrap: break-word;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror blockquote {
+  border-left: 3px solid #ddd;
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  color: #666;
+  word-wrap: break-word;
+}
+
+.ProseMirror pre {
+  background: #f4f4f4;
+  padding: 1em;
+  border-radius: 0.5em;
+  overflow-x: auto;
+  margin: 1em 0;
+  max-width: 100%;
+}
+
+.ProseMirror code {
+  background: #f4f4f4;
+  padding: 0.2em 0.4em;
+  border-radius: 0.3em;
+  word-wrap: break-word;
+}
+
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+  display: block;
+}
+
+.ProseMirror a {
+  color: #2563eb;
+  text-decoration: underline;
+  word-wrap: break-word;
+}
+
+.ProseMirror a:hover {
+  color: #1d4ed8;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 640px) {
+  .ProseMirror {
+    padding: 0.75rem;
+  }
+
+  .ProseMirror ul, .ProseMirror ol {
+    padding-left: 1.25em;
+  }
+
+  .ProseMirror blockquote {
+    padding: 0.5em 0.75em;
+  }
+
+  .ProseMirror pre {
+    padding: 0.75em;
+  }
+} 

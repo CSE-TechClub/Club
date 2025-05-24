@@ -44,6 +44,12 @@ interface SuggestionItem {
   image: string;
 }
 
+interface Blog {
+  id: string;
+  title: string;
+  category: string;
+}
+
 const subclubs = [
   {
     name: "Web Wizards",
@@ -148,6 +154,7 @@ const Home: React.FC = () => {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
 
   const stats: StatCard[] = [
     {
@@ -235,6 +242,17 @@ const Home: React.FC = () => {
         .order("created_at", { ascending: false });
       if (moviesData) {
         setMovies(moviesData as SuggestionItem[]);
+      }
+
+      // Fetch blogs for quick links
+      const { data: blogsData } = await supabase
+        .from('blogs')
+        .select('id, title, category')
+        .order('created_at', { ascending: false })
+        .limit(5); // Limit to 5 most recent blogs
+      
+      if (blogsData) {
+        setBlogs(blogsData as Blog[]);
       }
 
       // ✨ ✨ ✨ New added code starts here ✨ ✨ ✨
@@ -474,6 +492,40 @@ const Home: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Blog Quick Links */}
+      {blogs.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+            Recent Blog Posts
+          </h2>
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <ul className="space-y-3">
+              {blogs.map((blog) => (
+                <li key={blog.id} className="flex items-center justify-between">
+                  <Link 
+                    to={`/blog/${blog.id}`} 
+                    className="text-blue-500 hover:underline flex-1"
+                  >
+                    {blog.title}
+                  </Link>
+                  <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                    {blog.category}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4 text-right">
+              <Link 
+                to="/blogs" 
+                className="text-blue-500 hover:text-blue-600 font-medium"
+              >
+                View All Blogs →
+              </Link>
+            </div>
           </div>
         </div>
       )}

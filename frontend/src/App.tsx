@@ -18,6 +18,9 @@ import ProfilePage from './pages/Profile';
 import AdminLogin from './pages/AdminLoginPage';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
+import Blogs from './pages/Blogs';
+import CreateBlog from './pages/CreateBlog';
+import BlogDetails from './pages/BlogDetails';
 
 function AppWrapper() {
   return (
@@ -77,6 +80,8 @@ function App() {
           <Route path="/quizzes" element={<Quizzes />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/create-blog" element={<CreateBlog />} />
           <Route path="/ai" element={<AIBlog />} />
           <Route path="/web-dev" element={<WebDevBlog />} />
           <Route path="/devops" element={<DevOpsBlog />} />
@@ -87,6 +92,7 @@ function App() {
           <Route path="/adminlogin" element={<AdminLogin />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/blog/:id" element={<BlogDetails />} />
         </Routes>
       </main>
       <Footer />
