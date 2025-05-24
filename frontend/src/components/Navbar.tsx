@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, Brain, Shield, Home, Menu, X, GitPullRequest, User } from 'lucide-react';
+import { Users, Brain, Shield, Home, Menu, X, GitPullRequest, UserCircle, Newspaper } from 'lucide-react';
 import { clsx } from 'clsx';
 import { supabase } from '../supabaseClient';
 
@@ -28,10 +28,11 @@ function Navbar() {
   const navLinks = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/members', icon: Users, label: 'Members' },
+    { to: '/blogs', icon: Newspaper, label: 'Blogs' },
     { to: '/quizzes', icon: Brain, label: 'Quizzes' },
     { to: '/leaderboard', icon: GitPullRequest, label: 'Leaderboard' },
     ...(userRole === 'admin' ? [{ to: '/admin', icon: Shield, label: 'Admin' }] : []),
-    { to: '/profile', icon: User, label: 'Profile' },
+    { to: '/profile', icon: UserCircle, label: 'Profile' },
   ];
 
   return (
@@ -56,7 +57,9 @@ function Navbar() {
                 className="nav-link transition-colors duration-200 flex items-center space-x-1"
               >
                 <link.icon className="h-5 w-5" />
-                <span>{link.label}</span>
+                <span className={link.label === 'Profile' || link.label === 'Admin' ? 'hidden' : ''}>
+                  {link.label}
+                </span>
               </Link>
             ))}
           </div>

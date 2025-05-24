@@ -9,6 +9,8 @@ import {
   UserPlus,
   Settings,
   Users2,
+  FileText,
+  Trash2,
 } from "lucide-react";
 import { supabase } from "../supabaseClient";
 import { mockMembers } from "../pages/Members";
@@ -41,6 +43,29 @@ interface SuggestionItem {
   title: string;
   link: string;
   image: string;
+}
+
+interface Blog {
+  id: string;
+  title: string;
+  content: string;
+  description: string;
+  banner_url: string;
+  category: string;
+  author_id: string;
+  likes: number;
+  created_at: string;
+  author: {
+    name: string;
+    usn: string;
+  };
+}
+
+interface BlogWithUser extends Omit<Blog, 'author'> {
+  users: {
+    name: string;
+    usn: string;
+  } | null;
 }
 
 // --- component ---
@@ -79,6 +104,7 @@ const AdminDashboard: React.FC = () => {
   const [quizCompletions, setQuizCompletions] = useState(0);
   const [adminCount, setAdminCount] = useState(0);
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
+  const [blogs, setBlogs] = useState<Blog[]>([]);
 
   // fetch data
   useEffect(() => {
@@ -139,6 +165,48 @@ const AdminDashboard: React.FC = () => {
       }
 
       setAdminCount(mockMembers.length);
+
+      // Fetch blogs with author information
+      const { data: blogsData, error: blogsError } = await supabase
+        .from('blogs')
+        .select(`
+          id,
+          title,
+          content,
+          description,
+          banner_url,
+          category,
+          author_id,
+          likes,
+          created_at,
+          users!author_id (
+            name,
+            usn
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (blogsError) {
+        console.error('Error fetching blogs:', blogsError);
+      } else if (blogsData) {
+        // Transform the data to match our Blog interface
+        const transformedBlogs: Blog[] = (blogsData as unknown as BlogWithUser[]).map(blog => ({
+          id: blog.id,
+          title: blog.title,
+          content: blog.content,
+          description: blog.description,
+          banner_url: blog.banner_url,
+          category: blog.category,
+          author_id: blog.author_id,
+          likes: blog.likes,
+          created_at: blog.created_at,
+          author: {
+            name: blog.users?.name || 'Anonymous',
+            usn: blog.users?.usn || 'N/A'
+          }
+        }));
+        setBlogs(transformedBlogs);
+      }
     };
 
     fetchData();
@@ -305,6 +373,27 @@ const AdminDashboard: React.FC = () => {
     const { error } = await supabase.from("news").delete().eq("title", title);
     if (!error) {
       setNews(news.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleDeleteBlog = async (blogId: string) => {
+    if (!window.confirm('Are you sure you want to delete this blog?')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('blogs')
+        .delete()
+        .eq('id', blogId);
+
+      if (error) throw error;
+
+      // Update local state
+      setBlogs(blogs.filter(blog => blog.id !== blogId));
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+      alert('Failed to delete blog. Please try again.');
     }
   };
 
@@ -543,6 +632,45 @@ const AdminDashboard: React.FC = () => {
               </li>
             ))}
           </ul>
+        </div>
+
+        {/* Blogs Management */}
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Blogs Management</h2>
+            <FileText className="h-6 w-6 text-gray-500" />
+          </div>
+          <div className="space-y-4">
+            {blogs.map((blog) => (
+              <div
+                key={blog.id}
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-gray-900 mb-1">{blog.title}</h3>
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">{blog.description}</p>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                      <span>By: {blog.author?.name || 'Anonymous'}</span>
+                      <span>Category: {blog.category}</span>
+                      <span>Likes: {blog.likes || 0}</span>
+                      <span>Created: {new Date(blog.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteBlog(blog.id)}
+                    className="ml-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                    title="Delete blog"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+            {blogs.length === 0 && (
+              <p className="text-gray-500 text-center py-4">No blogs found</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
