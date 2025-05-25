@@ -68,9 +68,25 @@ interface BlogWithUser extends Omit<Blog, 'author'> {
   } | null;
 }
 
+interface User {
+  name: string;
+  usn: string;
+}
+
+interface MovieSuggestion {
+  id: string;
+  movie_name: string;
+  user_id: string;
+  user_name: string;
+  user_usn: string;
+  created_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 // --- component ---
 const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [announcements, setAnnouncements] = useState<string[]>([]);
   const [announcementInput, setAnnouncementInput] = useState("");
@@ -105,6 +121,7 @@ const AdminDashboard: React.FC = () => {
   const [adminCount, setAdminCount] = useState(0);
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
+  const [movieSuggestions, setMovieSuggestions] = useState<MovieSuggestion[]>([]);
 
   // fetch data
   useEffect(() => {
@@ -207,9 +224,56 @@ const AdminDashboard: React.FC = () => {
         }));
         setBlogs(transformedBlogs);
       }
+
+      // Fetch movie suggestions with user details
+      const { data: suggestionsData, error: suggestionsError } = await supabase
+        .from('movie_suggestions_with_users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (suggestionsError) {
+        console.error('Error fetching suggestions:', suggestionsError);
+      } else if (suggestionsData) {
+        const formattedSuggestions = suggestionsData.map(suggestion => ({
+          id: suggestion.id,
+          movie_name: suggestion.movie_name,
+          user_id: suggestion.user_id,
+          user_name: suggestion.user_name || 'Anonymous',
+          user_usn: suggestion.user_usn || 'N/A',
+          created_at: suggestion.created_at,
+          status: suggestion.status
+        }));
+        setMovieSuggestions(formattedSuggestions);
+      }
     };
 
     fetchData();
+  }, [navigate]);
+
+  // Add useEffect to check admin status
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (error || !userData || userData.role !== 'admin') {
+        navigate('/');
+        return;
+      }
+
+      setIsAdmin(true);
+    };
+
+    checkAdminStatus();
   }, [navigate]);
 
   const stats: StatCard[] = [
@@ -394,6 +458,93 @@ const AdminDashboard: React.FC = () => {
     } catch (error) {
       console.error('Error deleting blog:', error);
       alert('Failed to delete blog. Please try again.');
+    }
+  };
+
+  const handleApproveSuggestion = async (suggestion: MovieSuggestion) => {
+    if (!isAdmin) {
+      alert('Only admins can approve suggestions');
+      return;
+    }
+
+    try {
+      // Only update the status to approved
+      const { error: updateError } = await supabase
+        .from('movie_suggestions')
+        .update({ status: 'approved' })
+        .eq('id', suggestion.id);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setMovieSuggestions(movieSuggestions.map(s =>
+        s.id === suggestion.id ? { ...s, status: 'approved' } : s
+      ));
+
+      alert('Suggestion marked as approved. Remember to add the movie details later!');
+    } catch (error) {
+      console.error('Error approving suggestion:', error);
+      alert('Failed to approve suggestion. Please try again.');
+    }
+  };
+
+  const handleRejectSuggestion = async (suggestion: MovieSuggestion) => {
+    if (!isAdmin) {
+      alert('Only admins can reject suggestions');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('movie_suggestions')
+        .update({ status: 'rejected' })
+        .eq('id', suggestion.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setMovieSuggestions(movieSuggestions.map(s =>
+        s.id === suggestion.id ? { ...s, status: 'rejected' } : s
+      ));
+
+      alert('Suggestion rejected');
+    } catch (error) {
+      console.error('Error rejecting suggestion:', error);
+      alert('Failed to reject suggestion. Please try again.');
+    }
+  };
+
+  const handleDeleteSuggestion = async (suggestion: MovieSuggestion) => {
+    if (!isAdmin) {
+      alert('Only admins can delete suggestions');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this suggestion?')) {
+      return;
+    }
+
+    try {
+      // Delete directly from movie_suggestions table
+      const { error } = await supabase
+        .from('movie_suggestions')
+        .delete()
+        .eq('id', suggestion.id);
+
+      if (error) {
+        console.error('Database deletion error:', error);
+        throw error;
+      }
+
+      // Update the UI
+      setMovieSuggestions(prevSuggestions => 
+        prevSuggestions.filter(s => s.id !== suggestion.id)
+      );
+
+      alert('Suggestion deleted successfully');
+    } catch (error) {
+      console.error('Error in delete operation:', error);
+      alert('Failed to delete suggestion. Please try again.');
     }
   };
 
@@ -669,6 +820,80 @@ const AdminDashboard: React.FC = () => {
             ))}
             {blogs.length === 0 && (
               <p className="text-gray-500 text-center py-4">No blogs found</p>
+            )}
+          </div>
+        </div>
+
+        {/* Movie Suggestions */}
+        <div className="bg-white rounded-lg shadow-md p-6 mt-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Movie Suggestions</h2>
+            <FileText className="h-6 w-6 text-gray-500" />
+          </div>
+          <div className="space-y-4">
+            {movieSuggestions && movieSuggestions.length > 0 ? (
+              movieSuggestions.map((suggestion) => (
+                <div
+                  key={suggestion.id}
+                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 mb-1">
+                        {suggestion.movie_name}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                        <span>Suggested by: {suggestion.user_name}</span>
+                        <span>USN: {suggestion.user_usn}</span>
+                        <span>Date: {new Date(suggestion.created_at).toLocaleDateString()}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          suggestion.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          suggestion.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {suggestion.status.charAt(0).toUpperCase() + suggestion.status.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2">
+                      {suggestion.status === 'pending' ? (
+                        <>
+                          <button
+                            onClick={() => handleApproveSuggestion(suggestion)}
+                            className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50 rounded-full transition-colors"
+                            title="Approve suggestion"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => handleRejectSuggestion(suggestion)}
+                            className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                            title="Reject suggestion"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => handleDeleteSuggestion(suggestion)}
+                          className="p-2 text-gray-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                          title="Delete suggestion"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center py-4">No movie suggestions yet</p>
             )}
           </div>
         </div>
