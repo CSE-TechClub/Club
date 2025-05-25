@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Star, ArrowLeft, Flag } from 'lucide-react';
+import { Star, ArrowLeft, Flag, PenSquare, Trash2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import '../styles/editor.css';
 import '../styles/blog.css';
@@ -31,12 +31,21 @@ const BlogDetails = () => {
   const [isReported, setIsReported] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportReason, setReportReason] = useState('');
+  const [isAuthor, setIsAuthor] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchBlog();
     checkIfLiked();
     checkIfReported();
   }, [id]);
+
+  useEffect(() => {
+    if (blog) {
+      checkIfAuthor();
+    }
+  }, [blog]);
 
   const fetchBlog = async () => {
     try {
@@ -107,6 +116,17 @@ const BlogDetails = () => {
       }
     } catch (error) {
       console.error('Error checking report status:', error);
+    }
+  };
+
+  const checkIfAuthor = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !blog) return;
+
+      setIsAuthor(user.id === blog.author_id);
+    } catch (error) {
+      console.error('Error checking author status:', error);
     }
   };
 
@@ -284,6 +304,36 @@ const BlogDetails = () => {
     }
   };
 
+  const handleDelete = async () => {
+    if (!blog) return;
+
+    try {
+      setIsDeleting(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || user.id !== blog.author_id) {
+        alert('You are not authorized to delete this blog');
+        return;
+      }
+
+      // Delete the blog
+      const { error: deleteError } = await supabase
+        .from('blogs')
+        .delete()
+        .eq('id', blog.id);
+
+      if (deleteError) throw deleteError;
+
+      // Navigate back to blogs page after successful deletion
+      navigate('/blogs');
+    } catch (error) {
+      console.error('Error deleting blog:', error);
+      alert('Failed to delete blog. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -311,11 +361,11 @@ const BlogDetails = () => {
       </button>
 
       <article className="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="relative h-96">
+        <div className="relative w-full aspect-[16/9] sm:aspect-[21/9]">
           <img
             src={blog.banner_url}
             alt={blog.title}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain sm:object-cover"
           />
           <div className="absolute top-4 left-4">
             <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -329,31 +379,53 @@ const BlogDetails = () => {
             {blog.title}
           </h1>
 
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <p className="text-lg font-medium text-gray-900">
-                {blog.author.name}
-              </p>
-              <p className="text-gray-600">{blog.author.usn}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div className="flex items-center space-x-3">
+              <div>
+                <p className="text-lg font-medium text-gray-900">
+                  {blog.author.name}
+                </p>
+                <p className="text-gray-600">{blog.author.usn}</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleLike}
-                className={`flex items-center space-x-1 transition-colors duration-200 ${
-                  isLiked ? 'text-yellow-400' : 'text-gray-600 hover:text-yellow-400'
-                }`}
-              >
-                <Star className={`h-6 w-6 ${isLiked ? 'fill-current' : ''}`} />
-                <span>{likeCount}</span>
-              </button>
-              <button
-                onClick={handleReport}
-                className={`flex items-center space-x-1 transition-colors duration-200 ${
-                  isReported ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
-                }`}
-              >
-                <Flag className={`h-6 w-6 ${isReported ? 'fill-current' : ''}`} />
-              </button>
+            <div className="flex flex-wrap items-center gap-4">
+              {isAuthor && (
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => navigate(`/edit-blog/${blog.id}`)}
+                    className="flex items-center space-x-1 text-blue-600 hover:text-blue-800"
+                  >
+                    <PenSquare className="h-5 w-5" />
+                    <span className="text-sm">Edit</span>
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="flex items-center space-x-1 text-red-600 hover:text-red-800"
+                  >
+                    <Trash2 className="h-5 w-5" />
+                    <span className="text-sm">Delete</span>
+                  </button>
+                </div>
+              )}
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleLike}
+                  className={`flex items-center space-x-1 transition-colors duration-200 ${
+                    isLiked ? 'text-yellow-400' : 'text-gray-600 hover:text-yellow-400'
+                  }`}
+                >
+                  <Star className={`h-5 w-5 ${isLiked ? 'fill-current' : ''}`} />
+                  <span className="text-sm">{likeCount}</span>
+                </button>
+                <button
+                  onClick={handleReport}
+                  className={`flex items-center space-x-1 transition-colors duration-200 ${
+                    isReported ? 'text-red-500' : 'text-gray-600 hover:text-red-500'
+                  }`}
+                >
+                  <Flag className={`h-5 w-5 ${isReported ? 'fill-current' : ''}`} />
+                </button>
+              </div>
             </div>
           </div>
 
@@ -366,6 +438,34 @@ const BlogDetails = () => {
           </div>
         </div>
       </article>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Delete Blog</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this blog? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Blog'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Report Modal */}
       {showReportModal && (
