@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Image as ImageIcon, Link as LinkIcon, X, Bold, Italic, List, ListOrdered, Heading1, Heading2, Quote, Code } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
@@ -11,6 +11,8 @@ import '../styles/editor.css';
 
 const CreateBlog = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditing = Boolean(id);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [bannerUrl, setBannerUrl] = useState('');
@@ -19,6 +21,7 @@ const CreateBlog = () => {
   const [linkUrl, setLinkUrl] = useState('');
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [userInfo, setUserInfo] = useState<{ name: string; usn: string } | null>(null);
+  const [isAuthor, setIsAuthor] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -78,6 +81,45 @@ const CreateBlog = () => {
     fetchUserInfo();
   }, []);
 
+  useEffect(() => {
+    const fetchBlogData = async () => {
+      if (!id) return;
+
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          navigate('/login');
+          return;
+        }
+
+        const { data: blog, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (error) throw error;
+
+        if (blog.author_id !== user.id) {
+          navigate('/blogs');
+          return;
+        }
+
+        setIsAuthor(true);
+        setTitle(blog.title);
+        setDescription(blog.description);
+        setBannerUrl(blog.banner_url);
+        setCategory(blog.category);
+        editor?.commands.setContent(blog.content);
+      } catch (error) {
+        console.error('Error fetching blog:', error);
+        navigate('/blogs');
+      }
+    };
+
+    fetchBlogData();
+  }, [id, editor]);
+
   const handleLinkInsert = () => {
     if (linkUrl && editor) {
       editor
@@ -112,54 +154,51 @@ const CreateBlog = () => {
 
       const content = editor.getHTML();
 
-      console.log('Creating blog with data:', {
-        title,
-        description,
-        content,
-        banner_url: bannerUrl,
-        category,
-        author_id: user.id,
-        likes: 0
-      });
-
-      const { data: blogData, error: blogError } = await supabase
-        .from('blogs')
-        .insert([
-          {
+      if (isEditing) {
+        // Update existing blog
+        const { error: updateError } = await supabase
+          .from('blogs')
+          .update({
             title,
             description,
             content,
             banner_url: bannerUrl,
             category,
-            author_id: user.id,
-            likes: 0
-          }
-        ])
-        .select()
-        .single();
+          })
+          .eq('id', id);
 
-      if (blogError) {
-        console.error('Error creating blog:', blogError);
-        throw blogError;
-      }
+        if (updateError) throw updateError;
+      } else {
+        // Create new blog
+        const { error: insertError } = await supabase
+          .from('blogs')
+          .insert([
+            {
+              title,
+              description,
+              content,
+              banner_url: bannerUrl,
+              category,
+              author_id: user.id,
+              likes: 0
+            }
+          ]);
 
-      console.log('Blog created successfully:', blogData);
+        if (insertError) throw insertError;
 
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ reputation: 0 })
-        .eq('id', user.id)
-        .is('reputation', null);
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ reputation: 0 })
+          .eq('id', user.id)
+          .is('reputation', null);
 
-      if (updateError) {
-        console.error('Error updating user reputation:', updateError);
-        throw updateError;
+        if (updateError) throw updateError;
       }
 
       navigate('/blogs');
     } catch (error) {
-      console.error('Error creating blog:', error);
-      alert('Failed to create blog. Please try again.');
+      console.error('Error saving blog:', error);
+      alert('Failed to save blog. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -245,7 +284,9 @@ const CreateBlog = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="bg-white rounded-xl shadow-lg p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Blog</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+          {isEditing ? 'Edit Blog' : 'Create Blog'}
+        </h1>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Banner Image */}
@@ -365,7 +406,9 @@ const CreateBlog = () => {
               disabled={isSubmitting}
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? 'Publishing...' : 'Publish Blog'}
+              {isSubmitting 
+                ? (isEditing ? 'Saving...' : 'Publishing...') 
+                : (isEditing ? 'Save Changes' : 'Publish Blog')}
             </button>
           </div>
         </form>

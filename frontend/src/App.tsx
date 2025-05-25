@@ -93,6 +93,7 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/blog/:id" element={<BlogDetails />} />
+          <Route path="/edit-blog/:id" element={<CreateBlog />} />
         </Routes>
       </main>
       <Footer />
