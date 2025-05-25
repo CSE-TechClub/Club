@@ -37,11 +37,18 @@ interface NewsItem {
   image: string;
   description: string;
 }
+interface MovieRating {
+  rating: number;
+}
+
 interface SuggestionItem {
   id: string;
   title: string;
   link: string;
   image: string;
+  averageRating?: number;
+  totalRatings?: number;
+  ratings?: MovieRating[];
 }
 
 interface Blog {
@@ -156,6 +163,16 @@ const Home: React.FC = () => {
   const [movies, setMovies] = useState<SuggestionItem[]>([]);
   const [blogs, setBlogs] = useState<Blog[]>([]);
 
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState<SuggestionItem | null>(null);
+  const [userRating, setUserRating] = useState(0);
+  const [hoveredRating, setHoveredRating] = useState(0);
+
+  // Add new state for suggestion modal
+  const [showSuggestionModal, setShowSuggestionModal] = useState(false);
+  const [suggestionText, setSuggestionText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const stats: StatCard[] = [
     {
       title: "Users",
@@ -203,6 +220,15 @@ const Home: React.FC = () => {
     );
   };
 
+  // Update the rating calculation with proper types
+  const calculateAverageRating = (ratings: MovieRating[]): { averageRating: number | null; totalRatings: number } => {
+    const totalRatings = ratings.length;
+    const averageRating = totalRatings > 0
+      ? ratings.reduce((sum: number, r: MovieRating) => sum + r.rating, 0) / totalRatings
+      : null;
+    return { averageRating, totalRatings };
+  };
+
   // Fetch announcements + subscribe to realtime
   useEffect(() => {
     const fetchData = async () => {
@@ -238,10 +264,26 @@ const Home: React.FC = () => {
       // Fetch movies
       const { data: moviesData } = await supabase
         .from("movies")
-        .select("*")
+        .select(`
+          *,
+          ratings:movie_ratings(
+            rating
+          )
+        `)
         .order("created_at", { ascending: false });
       if (moviesData) {
-        setMovies(moviesData as SuggestionItem[]);
+        const moviesWithRatings = moviesData.map(movie => {
+          const ratings = (movie.ratings || []) as MovieRating[];
+          const { averageRating, totalRatings } = calculateAverageRating(ratings);
+          
+          return {
+            ...movie,
+            averageRating,
+            totalRatings,
+            ratings: undefined
+          };
+        });
+        setMovies(moviesWithRatings as SuggestionItem[]);
       }
 
       // Fetch blogs for quick links
@@ -296,6 +338,122 @@ const Home: React.FC = () => {
     }, 4000);
     return () => clearInterval(iv);
   }, [paused, announcements]);
+
+  // Update the handleRatingSubmit function
+  const handleRatingSubmit = async () => {
+    if (!selectedMovie || !userRating) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('Please login to rate movies');
+        return;
+      }
+
+      // Check if user has already rated this movie
+      const { data: existingRating } = await supabase
+        .from('movie_ratings')
+        .select('id')
+        .eq('movie_id', selectedMovie.id)
+        .eq('user_id', user.id)
+        .single();
+
+      if (existingRating) {
+        // Update existing rating
+        const { error } = await supabase
+          .from('movie_ratings')
+          .update({ rating: userRating })
+          .eq('id', existingRating.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new rating
+        const { error } = await supabase
+          .from('movie_ratings')
+          .insert([
+            {
+              movie_id: selectedMovie.id,
+              user_id: user.id,
+              rating: userRating
+            }
+          ]);
+
+        if (error) throw error;
+      }
+
+      // Refresh movies to update ratings
+      const { data: updatedMovies } = await supabase
+        .from("movies")
+        .select(`
+          *,
+          ratings:movie_ratings(
+            rating
+          )
+        `)
+        .order("created_at", { ascending: false });
+
+      if (updatedMovies) {
+        const moviesWithRatings = updatedMovies.map(movie => {
+          const ratings = (movie.ratings || []) as MovieRating[];
+          const { averageRating, totalRatings } = calculateAverageRating(ratings);
+          
+          return {
+            ...movie,
+            averageRating,
+            totalRatings,
+            ratings: undefined
+          };
+        });
+        setMovies(moviesWithRatings as SuggestionItem[]);
+      }
+
+      setShowRatingModal(false);
+      setSelectedMovie(null);
+      setUserRating(0);
+    } catch (error) {
+      console.error('Error submitting rating:', error);
+      alert('Failed to submit rating. Please try again.');
+    }
+  };
+
+  // Add handleSuggestionSubmit function
+  const handleSuggestionSubmit = async () => {
+    if (!suggestionText.trim()) {
+      alert('Please enter a movie suggestion');
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        alert('Please login to submit a suggestion');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('movie_suggestions')
+        .insert([
+          {
+            movie_name: suggestionText.trim(),
+            user_id: user.id,
+            additional_details: ''
+          }
+        ]);
+
+      if (error) throw error;
+
+      alert('Thank you for your suggestion!');
+      setShowSuggestionModal(false);
+      setSuggestionText("");
+    } catch (error) {
+      console.error('Error submitting suggestion:', error);
+      alert('Failed to submit suggestion. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -399,22 +557,43 @@ const Home: React.FC = () => {
       {/* Movie links */}
       {movies.length > 0 && (
         <div className="mt-8">
-          <h2 className="text-3xl text-gray-900 my-12 text-center">
-            Suggestions of the Week🎬
-          </h2>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
+            <h2 className="text-2xl sm:text-3xl text-gray-900 text-center">
+              Suggestions of the Week🎬
+            </h2>
+            <button
+              onClick={() => setShowSuggestionModal(true)}
+              className="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>Suggest</span>
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+            </button>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {movies.map((movie) => (
               <div
                 key={movie.id}
-                className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2 transform transition-all duration-300 w-full flex flex-col group" // group added
+                className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-2xl hover:-translate-y-2 transform transition-all duration-300 w-full flex flex-col group"
               >
                 {/* Image Section */}
                 <div className="relative w-full h-56 overflow-hidden">
                   <img
                     src={movie.image}
                     alt={movie.title}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" // Zoom on hover
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                   {/* Dark Gradient Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
@@ -427,19 +606,161 @@ const Home: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Rating Section */}
+                <div className="px-4 py-3 flex items-center justify-between bg-white border-b">
+                  <div className="flex items-center space-x-2">
+                    {movie.averageRating ? (
+                      <>
+                        <div className="flex items-center">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <svg
+                              key={star}
+                              className={`w-4 h-4 ${star <= Math.round(movie.averageRating!) ? 'text-yellow-400' : 'text-gray-300'}`}
+                              fill={star <= Math.round(movie.averageRating!) ? "currentColor" : "none"}
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                              />
+                            </svg>
+                          ))}
+                        </div>
+                        <span className="text-sm font-medium text-gray-600">
+                          {movie.averageRating.toFixed(1)}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-sm text-gray-500">No ratings yet</span>
+                    )}
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <button
+                      onClick={() => {
+                        setSelectedMovie(movie);
+                        setUserRating(0);
+                        setShowRatingModal(true);
+                      }}
+                      className="text-blue-600 text-sm font-medium hover:text-blue-700"
+                    >
+                      Rate
+                    </button>
+                    {movie.averageRating && (
+                      <span className="text-sm text-gray-500">
+                        ({movie.totalRatings} {movie.totalRatings === 1 ? 'rated' : 'ratings'})
+                      </span>
+                    )}
+                  </div>
+                </div>
+
                 {/* Link Section */}
                 <div className="px-4 py-2 flex items-center bg-white">
                   <a
                     href={movie.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-600 text-sm font-medium group-hover:animate-pulse" // Pulse on hover
+                    className="text-blue-600 text-sm font-medium group-hover:animate-pulse"
                   >
                     Watch Now
                   </a>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Rating Modal */}
+          {showRatingModal && selectedMovie && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                <h3 className="text-xl font-semibold mb-4">Rate "{selectedMovie.title}"</h3>
+                <div className="flex items-center justify-center space-x-2 mb-6">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      onClick={() => setUserRating(star)}
+                      onMouseEnter={() => setHoveredRating(star)}
+                      onMouseLeave={() => setHoveredRating(0)}
+                      className="text-3xl transition-colors"
+                    >
+                      <svg
+                        className="w-10 h-10"
+                        fill={star <= (hoveredRating || userRating) ? "currentColor" : "none"}
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                        />
+                      </svg>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex justify-end space-x-4">
+                  <button
+                    onClick={() => {
+                      setShowRatingModal(false);
+                      setSelectedMovie(null);
+                      setUserRating(0);
+                    }}
+                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleRatingSubmit}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Submit Rating
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Suggestion Modal */}
+      {showSuggestionModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h3 className="text-xl font-semibold mb-4">Suggest Your Watchings</h3>
+            <p className="text-gray-600 mb-4">
+              Suggest any documentaries or movies to admin for next week's suggestions
+            </p>
+            <textarea
+              value={suggestionText}
+              onChange={(e) => setSuggestionText(e.target.value)}
+              placeholder="Enter movie name and any additional details..."
+              className="w-full p-3 border rounded-lg mb-4 min-h-[100px] focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              disabled={isSubmitting}
+            />
+            <div className="flex justify-end space-x-4">
+              <button
+                onClick={() => {
+                  setShowSuggestionModal(false);
+                  setSuggestionText("");
+                }}
+                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSuggestionSubmit}
+                className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 ${
+                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+              </button>
+            </div>
           </div>
         </div>
       )}
