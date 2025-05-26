@@ -84,3 +84,41 @@
   border: 0;
   border-top: 1px solid #e5e7eb;
 } 
+
+.align-button:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.align-button.active {
+  background-color: #e2e8f0;
+  color: #1e40af;
+}
+
+
+/* Text alignment styles */
+.ProseMirror p[data-text-align="left"] {
+  text-align: left;
+}
+
+.ProseMirror p[data-text-align="center"] {
+  text-align: center;
+}
+
+.ProseMirror p[data-text-align="right"] {
+  text-align: right;
+}
+
+.ProseMirror p[data-text-align="justify"] {
+  text-align: justify;
+}
+
+/* Headings alignment */
+.ProseMirror h1[data-text-align],
+.ProseMirror h2[data-text-align],
+.ProseMirror h3[data-text-align],
+.ProseMirror h4[data-text-align],
+.ProseMirror h5[data-text-align],
+.ProseMirror h6[data-text-align] {
+  text-align: inherit;
+}

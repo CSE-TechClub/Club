@@ -6,6 +6,8 @@ import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
+import TextAlign from '@tiptap/extension-text-align';
+import { AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 import '../styles/editor.css';
 
@@ -26,6 +28,11 @@ const CreateBlog = () => {
   const editor = useEditor({
     extensions: [
       StarterKit,
+          TextAlign.configure({
+      types: ['heading', 'paragraph'],
+      alignments: ['left', 'center', 'right', 'justify'],
+      defaultAlignment: 'left',
+    }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -212,6 +219,30 @@ const CreateBlog = () => {
     return (
       <div className="border-b border-gray-300 p-2 flex flex-wrap gap-2 items-center">
         <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('left').run()}
+            className={`p-2 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'left' }) ? 'bg-gray-100' : ''}`}
+             title="Left align">
+            <AlignLeft className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => editor.chain().focus().setTextAlign('center').run()}
+            className={`p-2 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'center' }) ? 'bg-gray-100' : ''}`}
+            title="Center align">
+            <AlignCenter className="h-5 w-5" />
+          </button>
+          <button
+             onClick={() => editor.chain().focus().setTextAlign('right').run()}
+             className={`p-2 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'right' }) ? 'bg-gray-100' : ''}`}
+             title="Right align">
+            <AlignRight className="h-5 w-5" />
+          </button>
+          <button
+             onClick={() => editor.chain().focus().setTextAlign('justify').run()}
+            className={`p-2 rounded hover:bg-gray-100 ${editor.isActive({ textAlign: 'justify' }) ? 'bg-gray-100' : ''}`}
+            title="Justify">
+            <AlignJustify className="h-5 w-5" />
+          </button>
           <button
             onClick={() => editor.chain().focus().toggleBold().run()}
             className={`p-2 rounded hover:bg-gray-100 ${editor.isActive('bold') ? 'bg-gray-100' : ''}`}
