@@ -16,19 +16,27 @@ exports.handler = async function (event, context) {
 
   try {
     console.log("Starting calendar events fetch...");
+
+    // Format the private key properly
+    const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY
+      ? process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY.replace(
+          /\\n/g,
+          "\n"
+        ).replace(/"/g, "")
+      : "";
+
+    // Log environment variables (without sensitive data)
     console.log("Environment variables check:", {
       hasEmail: !!process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-      hasKey: !!process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY,
+      hasKey: !!privateKey,
       hasCalendarId: !!process.env.GOOGLE_CALENDAR_ID,
+      keyLength: privateKey.length,
     });
 
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-        private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(
-          /\\n/g,
-          "\n"
-        ),
+        private_key: privateKey,
       },
       scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
     });
