@@ -83,11 +83,16 @@ const EVENT_COLORS = [
   },
 ];
 
+const API_BASE_URL = import.meta.env.DEV
+  ? "http://localhost:3001" // Local development server
+  : ""; // Production - use relative URL
+
 const Calendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchEvents();
@@ -95,9 +100,41 @@ const Calendar: React.FC = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("/api/calendar/events");
-      if (!response.ok) throw new Error("Failed to fetch events");
+      setLoading(true);
+      setError(null);
+
+      // Use the appropriate API endpoint based on environment
+      const apiUrl = import.meta.env.DEV
+        ? `${API_BASE_URL}/api/calendar/events` // Local development
+        : "/.netlify/functions/getCalendarEvents"; // Production
+
+      console.log("Fetching events from:", apiUrl);
+
+      const response = await fetch(apiUrl);
+
+      console.log("Response status:", response.status);
+      console.log(
+        "Response headers:",
+        Object.fromEntries(response.headers.entries())
+      );
+
+      // Check content type
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        console.error("Invalid content type:", contentType);
+        console.error("Response text:", text);
+        throw new Error("Server returned non-JSON response");
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || "Failed to fetch events");
+      }
+
       const data = await response.json();
+      console.log("Received events:", data.length);
+
       // Assign colors to events that don't have them
       const eventsWithColors = data.map(
         (event: CalendarEvent, index: number) => ({
@@ -108,6 +145,9 @@ const Calendar: React.FC = () => {
       setEvents(eventsWithColors);
     } catch (error) {
       console.error("Error fetching events:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to fetch events"
+      );
     } finally {
       setLoading(false);
     }
@@ -139,6 +179,21 @@ const Calendar: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] p-4">
+        <div className="text-red-600 mb-2">Error loading calendar</div>
+        <div className="text-sm text-gray-600 mb-4">{error}</div>
+        <button
+          onClick={fetchEvents}
+          className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          Try Again
+        </button>
       </div>
     );
   }
