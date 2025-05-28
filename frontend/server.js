@@ -13,8 +13,10 @@ app.use(express.json());
 const auth = new google.auth.GoogleAuth({
   credentials: {
     client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    private_key:
-      process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.split("\\n").join("\n"),
+    private_key: process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(
+      /\\n/g,
+      "\n"
+    ),
   },
   scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
 });
@@ -46,9 +48,16 @@ app.get("/api/calendar/events", async (req, res) => {
       timeMax: oneMonthFromNow.toISOString(),
       singleEvents: true,
       orderBy: "startTime",
+      maxResults: 100,
     });
 
     console.log("Events found:", response.data.items?.length || 0);
+
+    // Set proper headers
+    res.setHeader("Content-Type", "application/json");
+    res.setHeader("Accept", "application/json");
+
+    // Send the response
     res.json(response.data.items || []);
   } catch (error) {
     console.error("Error fetching calendar events:", error);
@@ -57,8 +66,22 @@ app.get("/api/calendar/events", async (req, res) => {
       code: error.code,
       status: error.status,
     });
-    res.status(500).json({ error: "Failed to fetch calendar events" });
+
+    // Set proper error response
+    res.status(500).json({
+      error: "Failed to fetch calendar events",
+      details: error.message,
+    });
   }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Server error:", err);
+  res.status(500).json({
+    error: "Internal server error",
+    details: err.message,
+  });
 });
 
 const PORT = process.env.PORT || 3001;
