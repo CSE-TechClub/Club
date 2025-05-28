@@ -65,15 +65,15 @@ export const mockMembers = [
       "https://media.licdn.com/dms/image/v2/D5635AQGo-XIyXsIMZQ/profile-framedphoto-shrink_400_400/B56ZXEVxkPHsAc-/0/1742755797579?e=1748696400&v=beta&t=TGu3pXOkIpCE0GIOtfyQ0B5SPQGp6FcRVTde5aMHy74",
       
     },
-    {
+        {
       id: "6",
-      name: "James J",
+      name: "Inchara Manjunath Achar",
       role: "Club volunteer",
-      email: "placeholder2@example.com",
-      linkedinUrl: "https://www.linkedin.com/in/james-j-824780324/",
+      email: "placeholder5@example.com",
+      linkedinUrl: "https://www.linkedin.com/in/inchara-manjunath-achar-ba9703256/",
       bio: "Club volunteer",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D4E03AQHPdvLL2rCnIw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724487899674?e=1748476800&v=beta&t=-ka_w_Ns_MzXXISjBa0qklgZgCkl60HSCqIEW8DnE38",
+        "https://media.licdn.com/dms/image/v2/D5603AQF6Dk6kwQys_w/profile-displayphoto-shrink_400_400/B56ZaVrZuPGkAg-/0/1746267910545?e=1753315200&v=beta&t=yr4IdYl9fpF6-yKo2t_igsAgWJYEn_eCblx1iOP3gGw",
     },
     {
       id: "7",
@@ -97,13 +97,13 @@ export const mockMembers = [
     },
     {
       id: "9",
-      name: "Inchara Manjunath Achar",
+      name: "James J",
       role: "Club volunteer",
-      email: "placeholder5@example.com",
-      linkedinUrl: "https://www.linkedin.com/in/inchara-manjunath-achar-ba9703256/",
+      email: "placeholder2@example.com",
+      linkedinUrl: "https://www.linkedin.com/in/james-j-824780324/",
       bio: "Club volunteer",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5603AQF6Dk6kwQys_w/profile-displayphoto-shrink_400_400/B56ZaVrZuPGkAg-/0/1746267910545?e=1753315200&v=beta&t=yr4IdYl9fpF6-yKo2t_igsAgWJYEn_eCblx1iOP3gGw",
+        "https://media.licdn.com/dms/image/v2/D4E03AQHPdvLL2rCnIw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724487899674?e=1748476800&v=beta&t=-ka_w_Ns_MzXXISjBa0qklgZgCkl60HSCqIEW8DnE38",
     },
     {
       id: "10",
@@ -125,17 +125,7 @@ export const mockMembers = [
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5603AQEnmQzMcdakPA/profile-displayphoto-shrink_200_200/B56ZXSvqMcHoAY-/0/1742997470143?e=1751500800&v=beta&t=ZQ7G9WKrbtqI5p1K6TqeMgw7i9SfhIkxkK-rDpoQYXc",
     },
-    {
-      id: "13",
-      name: "Chaitra Bai J R",
-      role: "Club volunteer",
-      email: "placeholder9@example.com",
-      linkedinUrl: "https://www.linkedin.com/in/chaitra-bai-j-r-6a859125b",
-      bio: "Club volunteer",
-      imageUrl:
-        "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7",
-    },
-    
+
 ];
 function Members() {
  
