@@ -13,6 +13,7 @@ import {
 import { supabase } from "../supabaseClient";
 import { mockMembers } from "../pages/Members";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
+import Calendar from "../components/Calendar";
 
 interface StatCard {
   title: string;
@@ -164,7 +165,9 @@ const Home: React.FC = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
 
   const [showRatingModal, setShowRatingModal] = useState(false);
-  const [selectedMovie, setSelectedMovie] = useState<SuggestionItem | null>(null);
+  const [selectedMovie, setSelectedMovie] = useState<SuggestionItem | null>(
+    null
+  );
   const [userRating, setUserRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
 
@@ -221,11 +224,15 @@ const Home: React.FC = () => {
   };
 
   // Update the rating calculation with proper types
-  const calculateAverageRating = (ratings: MovieRating[]): { averageRating: number | null; totalRatings: number } => {
+  const calculateAverageRating = (
+    ratings: MovieRating[]
+  ): { averageRating: number | null; totalRatings: number } => {
     const totalRatings = ratings.length;
-    const averageRating = totalRatings > 0
-      ? ratings.reduce((sum: number, r: MovieRating) => sum + r.rating, 0) / totalRatings
-      : null;
+    const averageRating =
+      totalRatings > 0
+        ? ratings.reduce((sum: number, r: MovieRating) => sum + r.rating, 0) /
+          totalRatings
+        : null;
     return { averageRating, totalRatings };
   };
 
@@ -264,23 +271,26 @@ const Home: React.FC = () => {
       // Fetch movies
       const { data: moviesData } = await supabase
         .from("movies")
-        .select(`
+        .select(
+          `
           *,
           ratings:movie_ratings(
             rating
           )
-        `)
+        `
+        )
         .order("created_at", { ascending: false });
       if (moviesData) {
-        const moviesWithRatings = moviesData.map(movie => {
+        const moviesWithRatings = moviesData.map((movie) => {
           const ratings = (movie.ratings || []) as MovieRating[];
-          const { averageRating, totalRatings } = calculateAverageRating(ratings);
-          
+          const { averageRating, totalRatings } =
+            calculateAverageRating(ratings);
+
           return {
             ...movie,
             averageRating,
             totalRatings,
-            ratings: undefined
+            ratings: undefined,
           };
         });
         setMovies(moviesWithRatings as SuggestionItem[]);
@@ -288,11 +298,11 @@ const Home: React.FC = () => {
 
       // Fetch blogs for quick links
       const { data: blogsData } = await supabase
-        .from('blogs')
-        .select('id, title, category')
-        .order('created_at', { ascending: false })
+        .from("blogs")
+        .select("id, title, category")
+        .order("created_at", { ascending: false })
         .limit(5); // Limit to 5 most recent blogs
-      
+
       if (blogsData) {
         setBlogs(blogsData as Blog[]);
       }
@@ -344,39 +354,39 @@ const Home: React.FC = () => {
     if (!selectedMovie || !userRating) return;
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
-        alert('Please login to rate movies');
+        alert("Please login to rate movies");
         return;
       }
 
       // Check if user has already rated this movie
       const { data: existingRating } = await supabase
-        .from('movie_ratings')
-        .select('id')
-        .eq('movie_id', selectedMovie.id)
-        .eq('user_id', user.id)
+        .from("movie_ratings")
+        .select("id")
+        .eq("movie_id", selectedMovie.id)
+        .eq("user_id", user.id)
         .single();
 
       if (existingRating) {
         // Update existing rating
         const { error } = await supabase
-          .from('movie_ratings')
+          .from("movie_ratings")
           .update({ rating: userRating })
-          .eq('id', existingRating.id);
+          .eq("id", existingRating.id);
 
         if (error) throw error;
       } else {
         // Insert new rating
-        const { error } = await supabase
-          .from('movie_ratings')
-          .insert([
-            {
-              movie_id: selectedMovie.id,
-              user_id: user.id,
-              rating: userRating
-            }
-          ]);
+        const { error } = await supabase.from("movie_ratings").insert([
+          {
+            movie_id: selectedMovie.id,
+            user_id: user.id,
+            rating: userRating,
+          },
+        ]);
 
         if (error) throw error;
       }
@@ -384,24 +394,27 @@ const Home: React.FC = () => {
       // Refresh movies to update ratings
       const { data: updatedMovies } = await supabase
         .from("movies")
-        .select(`
+        .select(
+          `
           *,
           ratings:movie_ratings(
             rating
           )
-        `)
+        `
+        )
         .order("created_at", { ascending: false });
 
       if (updatedMovies) {
-        const moviesWithRatings = updatedMovies.map(movie => {
+        const moviesWithRatings = updatedMovies.map((movie) => {
           const ratings = (movie.ratings || []) as MovieRating[];
-          const { averageRating, totalRatings } = calculateAverageRating(ratings);
-          
+          const { averageRating, totalRatings } =
+            calculateAverageRating(ratings);
+
           return {
             ...movie,
             averageRating,
             totalRatings,
-            ratings: undefined
+            ratings: undefined,
           };
         });
         setMovies(moviesWithRatings as SuggestionItem[]);
@@ -411,45 +424,45 @@ const Home: React.FC = () => {
       setSelectedMovie(null);
       setUserRating(0);
     } catch (error) {
-      console.error('Error submitting rating:', error);
-      alert('Failed to submit rating. Please try again.');
+      console.error("Error submitting rating:", error);
+      alert("Failed to submit rating. Please try again.");
     }
   };
 
   // Add handleSuggestionSubmit function
   const handleSuggestionSubmit = async () => {
     if (!suggestionText.trim()) {
-      alert('Please enter a movie suggestion');
+      alert("Please enter a movie suggestion");
       return;
     }
 
     try {
       setIsSubmitting(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
-        alert('Please login to submit a suggestion');
+        alert("Please login to submit a suggestion");
         return;
       }
 
-      const { error } = await supabase
-        .from('movie_suggestions')
-        .insert([
-          {
-            movie_name: suggestionText.trim(),
-            user_id: user.id,
-            additional_details: ''
-          }
-        ]);
+      const { error } = await supabase.from("movie_suggestions").insert([
+        {
+          movie_name: suggestionText.trim(),
+          user_id: user.id,
+          additional_details: "",
+        },
+      ]);
 
       if (error) throw error;
 
-      alert('Thank you for your suggestion!');
+      alert("Thank you for your suggestion!");
       setShowSuggestionModal(false);
       setSuggestionText("");
     } catch (error) {
-      console.error('Error submitting suggestion:', error);
-      alert('Failed to submit suggestion. Please try again.');
+      console.error("Error submitting suggestion:", error);
+      alert("Failed to submit suggestion. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -466,7 +479,6 @@ const Home: React.FC = () => {
           Join our community of passionate learners and innovators
         </p>
       </div>
-
 
       {/* Sub-clubs */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
@@ -501,6 +513,14 @@ const Home: React.FC = () => {
         ) : (
           <p className="text-gray-500">No announcements available right now.</p>
         )}
+      </div>
+
+      {/* Calendar */}
+      <div className="mt-16">
+        <h2 className="text-3xl text-gray-900 my-8 text-center">
+          Upcoming Events 📅
+        </h2>
+        <Calendar />
       </div>
 
       {/* Stats */}
@@ -615,8 +635,16 @@ const Home: React.FC = () => {
                           {[1, 2, 3, 4, 5].map((star) => (
                             <svg
                               key={star}
-                              className={`w-4 h-4 ${star <= Math.round(movie.averageRating!) ? 'text-yellow-400' : 'text-gray-300'}`}
-                              fill={star <= Math.round(movie.averageRating!) ? "currentColor" : "none"}
+                              className={`w-4 h-4 ${
+                                star <= Math.round(movie.averageRating!)
+                                  ? "text-yellow-400"
+                                  : "text-gray-300"
+                              }`}
+                              fill={
+                                star <= Math.round(movie.averageRating!)
+                                  ? "currentColor"
+                                  : "none"
+                              }
                               stroke="currentColor"
                               viewBox="0 0 24 24"
                             >
@@ -634,7 +662,9 @@ const Home: React.FC = () => {
                         </span>
                       </>
                     ) : (
-                      <span className="text-sm text-gray-500">No ratings yet</span>
+                      <span className="text-sm text-gray-500">
+                        No ratings yet
+                      </span>
                     )}
                   </div>
                   <div className="flex items-center space-x-3">
@@ -650,7 +680,8 @@ const Home: React.FC = () => {
                     </button>
                     {movie.averageRating && (
                       <span className="text-sm text-gray-500">
-                        ({movie.totalRatings} {movie.totalRatings === 1 ? 'rated' : 'ratings'})
+                        ({movie.totalRatings}{" "}
+                        {movie.totalRatings === 1 ? "rated" : "ratings"})
                       </span>
                     )}
                   </div>
@@ -675,7 +706,9 @@ const Home: React.FC = () => {
           {showRatingModal && selectedMovie && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                <h3 className="text-xl font-semibold mb-4">Rate "{selectedMovie.title}"</h3>
+                <h3 className="text-xl font-semibold mb-4">
+                  Rate "{selectedMovie.title}"
+                </h3>
                 <div className="flex items-center justify-center space-x-2 mb-6">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -687,7 +720,11 @@ const Home: React.FC = () => {
                     >
                       <svg
                         className="w-10 h-10"
-                        fill={star <= (hoveredRating || userRating) ? "currentColor" : "none"}
+                        fill={
+                          star <= (hoveredRating || userRating)
+                            ? "currentColor"
+                            : "none"
+                        }
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
@@ -729,9 +766,12 @@ const Home: React.FC = () => {
       {showSuggestionModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <h3 className="text-xl font-semibold mb-4">Suggest Your Watchings</h3>
+            <h3 className="text-xl font-semibold mb-4">
+              Suggest Your Watchings
+            </h3>
             <p className="text-gray-600 mb-4">
-              Suggest any documentaries or movies to admin for next week's suggestions
+              Suggest any documentaries or movies to admin for next week's
+              suggestions
             </p>
             <textarea
               value={suggestionText}
@@ -754,11 +794,11 @@ const Home: React.FC = () => {
               <button
                 onClick={handleSuggestionSubmit}
                 className={`px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 ${
-                  isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                  isSubmitting ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+                {isSubmitting ? "Submitting..." : "Submit Suggestion"}
               </button>
             </div>
           </div>
@@ -827,8 +867,8 @@ const Home: React.FC = () => {
             <ul className="space-y-3">
               {blogs.map((blog) => (
                 <li key={blog.id} className="flex items-center justify-between">
-                  <Link 
-                    to={`/blog/${blog.id}`} 
+                  <Link
+                    to={`/blog/${blog.id}`}
                     className="text-blue-500 hover:underline flex-1"
                   >
                     {blog.title}
@@ -840,8 +880,8 @@ const Home: React.FC = () => {
               ))}
             </ul>
             <div className="mt-4 text-right">
-              <Link 
-                to="/blogs" 
+              <Link
+                to="/blogs"
                 className="text-blue-500 hover:text-blue-600 font-medium"
               >
                 View All Blogs →
