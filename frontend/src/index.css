@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "./styles/calendar.css";
+
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
@@ -23,11 +25,11 @@
   .nav-link {
     @apply flex items-center space-x-1 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 ease-in-out;
   }
-  
+
   .btn-primary {
     @apply px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 ease-in-out touch-manipulation;
   }
-  
+
   .card {
     @apply bg-white rounded-lg shadow-md p-4 sm:p-6 hover:shadow-lg transition-shadow duration-200 ease-in-out;
   }
@@ -67,7 +69,9 @@
 
 /* Touch device optimizations */
 @media (hover: none) {
-  .btn-primary, .nav-link, .card {
+  .btn-primary,
+  .nav-link,
+  .card {
     @apply hover:bg-opacity-100;
   }
 }
