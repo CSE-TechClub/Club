@@ -74,6 +74,7 @@ const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -272,7 +273,18 @@ const Calendar = () => {
                         shadow-sm
                       `}
                     >
-                      {event.summary}
+                      <div className="truncate">
+                        {format(
+                          new Date(event.start.dateTime || event.start.date),
+                          "h:mm a"
+                        )}{" "}
+                        - {event.summary}
+                      </div>
+                      {event.location && (
+                        <div className="text-[7px] sm:text-[8px] md:text-[9px] lg:text-[10px] opacity-75 truncate">
+                          📍 {event.location}
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -326,12 +338,17 @@ const Calendar = () => {
                         new Date(event.start.dateTime || event.start.date),
                         "h:mm a"
                       )}{" "}
-                      -
+                      -{" "}
                       {format(
                         new Date(event.end.dateTime || event.end.date),
                         "h:mm a"
                       )}
                     </p>
+                    {event.location && (
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                        📍 {event.location}
+                      </p>
+                    )}
                   </div>
                 );
               })}
@@ -342,6 +359,51 @@ const Calendar = () => {
             >
               Close
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Single Event Modal */}
+      {selectedEvent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 relative">
+            <button
+              onClick={() => setSelectedEvent(null)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              ×
+            </button>
+            <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              {selectedEvent.summary}
+            </h3>
+            <div className="space-y-3 text-gray-600">
+              <p className="flex items-center">
+                <span className="w-20 font-medium">Time:</span>
+                <span>
+                  {format(
+                    new Date(
+                      selectedEvent.start.dateTime || selectedEvent.start.date
+                    ),
+                    "h:mm a"
+                  )}{" "}
+                  -{" "}
+                  {format(
+                    new Date(
+                      selectedEvent.end.dateTime || selectedEvent.end.date
+                    ),
+                    "h:mm a"
+                  )}
+                </span>
+              </p>
+              {selectedEvent.location && (
+                <p className="flex items-start">
+                  <span className="w-20 font-medium">Location:</span>
+                  <span className="flex-1 break-words">
+                    {selectedEvent.location}
+                  </span>
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}
