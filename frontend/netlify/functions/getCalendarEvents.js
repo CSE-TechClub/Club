@@ -1,8 +1,12 @@
 const { google } = require("googleapis");
 
 exports.handler = async function (event, context) {
+  console.log("Function started");
+  console.log("Event:", JSON.stringify(event, null, 2));
+
   // Add CORS headers for preflight requests
   if (event.httpMethod === "OPTIONS") {
+    console.log("Handling OPTIONS request");
     return {
       statusCode: 200,
       headers: {
@@ -31,8 +35,11 @@ exports.handler = async function (event, context) {
       hasKey: !!privateKey,
       hasCalendarId: !!process.env.GOOGLE_CALENDAR_ID,
       keyLength: privateKey.length,
+      keyStartsWith: privateKey.substring(0, 30),
+      keyEndsWith: privateKey.substring(privateKey.length - 30),
     });
 
+    console.log("Creating Google Auth client...");
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -41,6 +48,7 @@ exports.handler = async function (event, context) {
       scopes: ["https://www.googleapis.com/auth/calendar.readonly"],
     });
 
+    console.log("Creating Calendar client...");
     const calendar = google.calendar({ version: "v3", auth });
 
     const now = new Date();
@@ -52,6 +60,7 @@ exports.handler = async function (event, context) {
       to: oneMonthFromNow.toISOString(),
     });
 
+    console.log("Making calendar API request...");
     const response = await calendar.events.list({
       calendarId: process.env.GOOGLE_CALENDAR_ID || "primary",
       timeMin: now.toISOString(),
@@ -81,6 +90,7 @@ exports.handler = async function (event, context) {
       message: error.message,
       code: error.code,
       status: error.status,
+      stack: error.stack,
     });
 
     return {
@@ -94,6 +104,8 @@ exports.handler = async function (event, context) {
       body: JSON.stringify({
         error: "Failed to fetch calendar events",
         details: error.message,
+        code: error.code,
+        status: error.status,
       }),
     };
   }
