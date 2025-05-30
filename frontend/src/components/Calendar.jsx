@@ -168,7 +168,7 @@ const Calendar = () => {
   return (
     <div className="bg-white rounded-xl shadow-lg p-2 sm:p-3 md:p-4 max-w-full overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3 sm:mb-4">
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
         <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-800">
           {format(currentDate, "MMMM yyyy")}
         </h2>
@@ -179,7 +179,7 @@ const Calendar = () => {
                 (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1)
               )
             }
-            className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-600"
+            className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-600"
             aria-label="Previous month"
           >
             ←
@@ -190,7 +190,7 @@ const Calendar = () => {
                 (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1)
               )
             }
-            className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-600"
+            className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors text-gray-600"
             aria-label="Next month"
           >
             →
@@ -221,7 +221,7 @@ const Calendar = () => {
               key={day.toString()}
               onClick={() => setSelectedDate(day)}
               className={`
-                aspect-square min-h-[32px] sm:min-h-[35px] md:min-h-[40px] lg:min-h-[45px]
+                aspect-[1.2] min-h-[28px] sm:min-h-[32px] md:min-h-[35px]
                 p-0.5 sm:p-0.5 md:p-1
                 ${isCurrentMonth ? "bg-white" : "bg-gray-50"}
                 ${isCurrentDay ? "bg-blue-50" : ""}
@@ -239,10 +239,10 @@ const Calendar = () => {
             >
               <div
                 className={`
-                  w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 lg:w-5 lg:h-5
+                  w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5
                   flex items-center justify-center
                   rounded-full
-                  text-[10px] sm:text-xs md:text-xs lg:text-sm font-medium
+                  text-[10px] sm:text-xs md:text-xs font-medium
                   ${
                     isCurrentDay
                       ? "bg-blue-500 text-white"
@@ -264,7 +264,7 @@ const Calendar = () => {
                     <div
                       key={event.id}
                       className={`
-                        text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs
+                        text-[8px] sm:text-[9px] md:text-[10px]
                         px-1 py-0.5
                         rounded-full truncate
                         ${color.light} ${color.border} ${color.text}
@@ -281,7 +281,7 @@ const Calendar = () => {
                         - {event.summary}
                       </div>
                       {event.location && (
-                        <div className="text-[7px] sm:text-[8px] md:text-[9px] lg:text-[10px] opacity-75 truncate">
+                        <div className="text-[7px] sm:text-[8px] md:text-[9px] opacity-75 truncate">
                           📍 {event.location}
                         </div>
                       )}
@@ -289,7 +289,7 @@ const Calendar = () => {
                   );
                 })}
                 {dayEvents.length > 2 && (
-                  <div className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs text-gray-500 text-center">
+                  <div className="text-[8px] sm:text-[9px] md:text-[10px] text-gray-500 text-center">
                     +{dayEvents.length - 2} more
                   </div>
                 )}
@@ -309,7 +309,7 @@ const Calendar = () => {
               </h3>
               <button
                 onClick={() => setSelectedDate(null)}
-                className="w-7 h-7 sm:w-8 sm:h-8 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-600"
+                className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center hover:bg-gray-100 rounded-full text-gray-600"
                 aria-label="Close modal"
               >
                 ×
