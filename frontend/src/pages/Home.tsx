@@ -518,7 +518,7 @@ const Home: React.FC = () => {
       {/* Calendar */}
       <div className="mt-16">
         <h2 className="text-3xl text-gray-900 my-8 text-center">
-          Upcoming Events 📅
+          Your Calendar
         </h2>
         <Calendar />
       </div>
