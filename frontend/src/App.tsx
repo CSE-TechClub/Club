@@ -28,6 +28,7 @@ import Blogs from "./pages/Blogs";
 import CreateBlog from "./pages/CreateBlog";
 import BlogDetails from "./pages/BlogDetails";
 import GoogleAuthCallback from "./pages/GoogleAuthCallback";
+import { InstallPrompt } from "./components/InstallPrompt";
 
 function AppWrapper() {
   return (
@@ -122,6 +123,7 @@ function App() {
         </Routes>
       </main>
       <Footer />
+      <InstallPrompt />
     </div>
   );
 }
