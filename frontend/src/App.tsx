@@ -29,12 +29,16 @@ import CreateBlog from "./pages/CreateBlog";
 import BlogDetails from "./pages/BlogDetails";
 import GoogleAuthCallback from "./pages/GoogleAuthCallback";
 import { InstallPrompt } from "./components/InstallPrompt";
+import { SplashScreen } from "./components/SplashScreen";
 
 function AppWrapper() {
   return (
-    <Router>
-      <App />
-    </Router>
+    <>
+      <SplashScreen />
+      <Router>
+        <App />
+      </Router>
+    </>
   );
 }
 

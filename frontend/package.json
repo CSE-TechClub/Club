@@ -29,7 +29,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.18.3",
     "firebase": "^10.8.0",
-    "framer-motion": "^12.9.2",
+    "framer-motion": "^12.15.0",
     "googleapis": "^149.0.0",
     "lucide-react": "^0.344.0",
     "moment": "^2.30.1",
@@ -37,8 +37,8 @@
     "react-big-calendar": "^1.8.5",
     "react-dom": "^18.2.0",
     "react-intersection-observer": "^9.16.0",
-    "react-router-dom": "^6.22.3",
-    "react-responsive": "^9.0.2"
+    "react-responsive": "^9.0.2",
+    "react-router-dom": "^6.22.3"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

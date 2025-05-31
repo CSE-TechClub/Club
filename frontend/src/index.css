@@ -19,6 +19,33 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  /* Offline state styles */
+  body.offline::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, #ef4444, #f97316);
+    z-index: 9999;
+    animation: pulse 2s infinite;
+  }
+
+  body.offline::after {
+    content: 'You are offline';
+    position: fixed;
+    top: 8px;
+    right: 16px;
+    background: #ef4444;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 9999;
+    animation: slideIn 0.3s ease-out;
+  }
 }
 
 @layer components {
@@ -74,6 +101,10 @@
   .card {
     @apply hover:bg-opacity-100;
   }
+
+  .hover\:shadow-lg:hover {
+    box-shadow: none;
+  }
 }
 
 /* Responsive typography */
@@ -111,11 +142,56 @@
 
 @keyframes slideIn {
   from {
-    transform: translateY(10px);
+    transform: translateY(-100%);
     opacity: 0;
   }
   to {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+/* Animations */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Offline content styles */
+.offline-content {
+  @apply bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4;
+}
+
+.offline-content h3 {
+  @apply text-lg font-semibold text-gray-900 mb-2;
+}
+
+.offline-content p {
+  @apply text-gray-600 text-sm;
+}
+
+/* Loading states */
+.loading {
+  @apply animate-pulse bg-gray-200;
+}
+
+.loading-text {
+  @apply h-4 bg-gray-200 rounded w-3/4;
+}
+
+/* Error states */
+.error-message {
+  @apply bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative;
+}
+
+/* Success states */
+.success-message {
+  @apply bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded relative;
 }

@@ -4,8 +4,9 @@
   "description": "A platform for students to connect and collaborate",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#4F46E5",
+  "theme_color": "#4F46E5",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icons/icon-192x192.png",
@@ -18,6 +19,27 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "splash_pages": null,
+  "screenshots": [
+    {
+      "src": "screenshots/splash-640x1136.png",
+      "sizes": "640x1136",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshots/splash-750x1334.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "screenshots/splash-1242x2208.png",
+      "sizes": "1242x2208",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 } 
