@@ -14,6 +14,7 @@ interface Blog {
   author_id: string;
   likes: number;
   created_at: string;
+  is_featured: boolean;
   author: {
     name: string;
     usn: string;
@@ -295,18 +296,28 @@ const Blogs = () => {
             <Link 
               key={blog.id} 
               to={`/blog/${blog.id}`}
-              className="block bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+              className={`block bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 ${
+                blog.is_featured ? 'ring-4 ring-yellow-400 relative animate-shine' : ''
+              }`}
             >
+              {blog.is_featured && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-100/30 to-transparent animate-shimmer pointer-events-none" />
+              )}
               <div className="relative h-48">
                 <img 
                   src={blog.banner_url} 
                   alt={blog.title}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute top-4 left-4">
+                <div className="absolute top-4 left-4 flex items-center gap-2">
                   <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
                     {blog.category}
                   </span>
+                  {blog.is_featured && (
+                    <span className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-yellow-900 px-3 py-1 rounded-full text-sm font-medium shadow-md animate-pulse">
+                      Featured
+                    </span>
+                  )}
                 </div>
               </div>
               
@@ -400,5 +411,48 @@ const Blogs = () => {
     </div>
   );
 };
+
+// Add these styles at the end of the file, before the export
+const styles = `
+@keyframes shine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shine {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 215, 0, 0.1) 25%,
+    rgba(255, 215, 0, 0.2) 50%,
+    rgba(255, 215, 0, 0.1) 75%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shine 3s infinite linear;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite linear;
+}
+`;
+
+// Add the styles to the document
+const styleSheet = document.createElement("style");
+styleSheet.innerText = styles;
+document.head.appendChild(styleSheet);
 
 export default Blogs; 
