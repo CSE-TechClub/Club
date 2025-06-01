@@ -18,7 +18,7 @@ export const mockMembers = [
     role: "Lead",
     email: "placeholder2@example.com",
     linkedinUrl: "https://www.linkedin.com/in/jananya-k-h/",
-    bio: "Web Wizards Lead ",
+    bio: "Web Wizards Lead | Full-Stack Developer",
     imageUrl:
       "https://media.licdn.com/dms/image/v2/D5603AQFJC5pNMZf6Jw/profile-displayphoto-shrink_200_200/B56ZaUFcVmHAAc-/0/1746241179055?e=1751500800&v=beta&t=JzPtt3AzwqWoEaeqsig3IvK0E7d5qf7f6yZ365uJX-Y",
   },
@@ -28,7 +28,7 @@ export const mockMembers = [
     role: "Lead",
     email: "placeholder3@example.com",
     linkedinUrl:"https://www.linkedin.com/in/gagan-tp-62ab89259/",
-    bio: " Full-Stack Developer | Cyber Scholars Lead",
+    bio: " Cyber Scholars Lead | Full-Stack Developer",
     imageUrl:
       "https://media.licdn.com/dms/image/v2/D5603AQHi1JlCsLbddg/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724480102399?e=1750896000&v=beta&t=-BCktKXDhStfyFi9njfSg3S5Qvi2VrGTQ7qLdpj0Oc0",
   },
@@ -38,7 +38,7 @@ export const mockMembers = [
     role: "volunteer",
     email: "placeholder3@example.com",
     linkedinUrl:"https://www.linkedin.com/in/jones-samuel-859b9024b/",
-    bio: "Backend Developer | Club volunteer",
+    bio: "Suggestion-Manager | Club volunteer",
     imageUrl:
       "https://media.licdn.com/dms/image/v2/D5635AQEQkWsFwxzjYw/profile-framedphoto-shrink_800_800/B56ZWhubfbHEAg-/0/1742175058306?e=1749319200&v=beta&t=T_uuTC1PNowT7_cPU-d89RowpRgfbv5Tmhm5BaqwRY4",
   },
@@ -60,7 +60,7 @@ export const mockMembers = [
       role: "Club volunteer",
       email: "placeholder1@example.com",
       linkedinUrl: "https://www.linkedin.com/in/vidya-p-b-03955a25b",
-      bio: "Club volunteer",
+      bio: " Blog Manager | Club volunteer",
       imageUrl:
       "https://media.licdn.com/dms/image/v2/D5635AQGo-XIyXsIMZQ/profile-framedphoto-shrink_800_800/B56ZXEVxkPHsAg-/0/1742755797579?e=1749319200&v=beta&t=FUk820eVCpZoPCBPGybmkF0rw-pm3Emc5jXAjmDSGuU",
       
@@ -71,7 +71,7 @@ export const mockMembers = [
       role: "Club volunteer",
       email: "placeholder5@example.com",
       linkedinUrl: "https://www.linkedin.com/in/inchara-manjunath-achar-ba9703256/",
-      bio: "Club volunteer",
+      bio: "Blog Manager | Club volunteer",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5603AQF6Dk6kwQys_w/profile-displayphoto-shrink_400_400/B56ZaVrZuPGkAg-/0/1746267910545?e=1753315200&v=beta&t=yr4IdYl9fpF6-yKo2t_igsAgWJYEn_eCblx1iOP3gGw",
     },
@@ -81,7 +81,7 @@ export const mockMembers = [
       role: "Club volunteer",
       email: "placeholder3@example.com",
       linkedinUrl: "https://www.linkedin.com/in/sapna-kamthane-0661b5269",
-      bio: "Club volunteer",
+      bio: "Quiz-Manager | Club volunteer",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5635AQGGwrsleX6PuA/profile-framedphoto-shrink_800_800/B56ZWj3r5ZGQAg-/0/1742211039200?e=1749319200&v=beta&t=1doXA72E2zDxs0_QjomU5cD_8Hs1RIwYCrL__Bd-9YE",
     },
@@ -91,7 +91,7 @@ export const mockMembers = [
       role: "Lead",
       email: "placeholder4@example.com",
       linkedinUrl: "https://www.linkedin.com/in/rudresh-manjunath21/",
-      bio: "Club volunteer | Phase-Changers Lead",
+      bio: "News-Master | Phase-Changers Lead",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5635AQG-89qG5DZL9Q/profile-framedphoto-shrink_800_800/profile-framedphoto-shrink_800_800/0/1724616225632?e=1749319200&v=beta&t=yViLexDM4CApw7PnZykFrayIfiiqFueBttCcHF0BaU8",
     },
@@ -101,7 +101,7 @@ export const mockMembers = [
       role: "Club volunteer",
       email: "placeholder2@example.com",
       linkedinUrl: "https://www.linkedin.com/in/james-j-824780324/",
-      bio: "Club volunteer",
+      bio: "Suggestion-Manager | Club volunteer",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D4E03AQHPdvLL2rCnIw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724487899674?e=1753920000&v=beta&t=VYhgOSd6qu9i_bAWUJC5yMEvAMqOWksct7WJ_lGZCKA",
     },
@@ -111,7 +111,7 @@ export const mockMembers = [
       role: "Club volunteer",
       email: "placeholder6@example.com",
       linkedinUrl: "https://www.linkedin.com/in/pragathi-s-9a558b25b",
-      bio: "Club volunteer",
+      bio: "Quiz-Manager | Club volunteer",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5603AQGRBzUN17vGwQ/profile-displayphoto-shrink_200_200/B56ZXGOZSdHsAc-/0/1742787418509?e=1751500800&v=beta&t=6W4MOC__MKUUKQfZAbuZp4cThejHR1ZnJR4LE_nQmyk",
     },
@@ -121,7 +121,7 @@ export const mockMembers = [
       role: "Club volunteer",
       email: "placeholder7@example.com",
       linkedinUrl: "https://www.linkedin.com/in/bhavyashree-k-p-4329b6259/",
-      bio: "Club volunteer",
+      bio: "Quiz-Manager | Club volunteer",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5603AQEnmQzMcdakPA/profile-displayphoto-shrink_200_200/B56ZXSvqMcHoAY-/0/1742997470143?e=1751500800&v=beta&t=ZQ7G9WKrbtqI5p1K6TqeMgw7i9SfhIkxkK-rDpoQYXc",
     },
@@ -131,7 +131,7 @@ export const mockMembers = [
       role: "Club volunteer",
       email: "placeholder7@example.com",
       linkedinUrl: "https://www.linkedin.com/in/nisarga-t-k-a3b67425b/",
-      bio: "Club volunteer",
+      bio: "Quiz-Manager | Club volunteer",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5635AQHs89v88Rtbqw/profile-framedphoto-shrink_800_800/profile-framedphoto-shrink_800_800/0/1733333581911?e=1749319200&v=beta&t=keuucErPACjBPofPahcroWcOZDTC43gB-KaCOjExaoU",
     },
@@ -141,7 +141,7 @@ export const mockMembers = [
       role: "Club volunteer",
       email: "placeholder7@example.com",
       linkedinUrl: "https://www.linkedin.com/in/narthana-m-d-7450a925a/",
-      bio: "Club volunteer",
+      bio: "Quiz-Manager | Club volunteer",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5635AQEcaI5U-zL39g/profile-framedphoto-shrink_400_400/B56ZWjF4dPGUAg-/0/1742197983392?e=1749319200&v=beta&t=MbWfdl8CwmHCG4JLkd0Cf1bGo3vwfmOnmoYArqkcRV8",
     },
