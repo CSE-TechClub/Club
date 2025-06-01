@@ -10,7 +10,7 @@ export const mockMembers = [
     linkedinUrl: "https://www.linkedin.com/in/keerthanakeerthana/",
     bio: "AI Avengers Lead",
     imageUrl:
-      "https://media.licdn.com/dms/image/v2/D5603AQFchHgvr5EM8g/profile-displayphoto-shrink_800_800/B56ZWOUX19HQAg-/0/1741849466834?e=1748476800&v=beta&t=haOxkAlDMNjhuQoN9-lJNQigWLUxaMe6YzfvUuXyS8Y",
+      "https://media.licdn.com/dms/image/v2/D5603AQFchHgvr5EM8g/profile-displayphoto-shrink_800_800/B56ZWOUX19HQAg-/0/1741849466834?e=1753920000&v=beta&t=7Dl9ufaU8Zp7SRKWIE46hECXbXwMNimm-pc0Mlnb9V8",
   },
   {
     id: "2",
@@ -40,7 +40,7 @@ export const mockMembers = [
     linkedinUrl:"https://www.linkedin.com/in/jones-samuel-859b9024b/",
     bio: "Backend Developer | Club volunteer",
     imageUrl:
-      "https://media.licdn.com/dms/image/v2/D5635AQEQkWsFwxzjYw/profile-framedphoto-shrink_400_400/B56ZWhubfbHEAc-/0/1742175058306?e=1748696400&v=beta&t=EVtHzAmO-ry-ppAW49Sdh5a2lCkbj8wduVtqQb3JGPM",
+      "https://media.licdn.com/dms/image/v2/D5635AQEQkWsFwxzjYw/profile-framedphoto-shrink_800_800/B56ZWhubfbHEAg-/0/1742175058306?e=1749319200&v=beta&t=T_uuTC1PNowT7_cPU-d89RowpRgfbv5Tmhm5BaqwRY4",
   },
 
   {
@@ -62,7 +62,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/vidya-p-b-03955a25b",
       bio: "Club volunteer",
       imageUrl:
-      "https://media.licdn.com/dms/image/v2/D5635AQGo-XIyXsIMZQ/profile-framedphoto-shrink_400_400/B56ZXEVxkPHsAc-/0/1742755797579?e=1748696400&v=beta&t=TGu3pXOkIpCE0GIOtfyQ0B5SPQGp6FcRVTde5aMHy74",
+      "https://media.licdn.com/dms/image/v2/D5635AQGo-XIyXsIMZQ/profile-framedphoto-shrink_800_800/B56ZXEVxkPHsAg-/0/1742755797579?e=1749319200&v=beta&t=FUk820eVCpZoPCBPGybmkF0rw-pm3Emc5jXAjmDSGuU",
       
     },
         {
@@ -83,7 +83,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/sapna-kamthane-0661b5269",
       bio: "Club volunteer",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5635AQGGwrsleX6PuA/profile-framedphoto-shrink_400_400/B56ZWj3r5ZGQAc-/0/1742211039166?e=1748696400&v=beta&t=BoeW3IdxxIdCLgGrNhaAP0lfhcKFZezlSoE4UFzCSpE",
+        "https://media.licdn.com/dms/image/v2/D5635AQGGwrsleX6PuA/profile-framedphoto-shrink_800_800/B56ZWj3r5ZGQAg-/0/1742211039200?e=1749319200&v=beta&t=1doXA72E2zDxs0_QjomU5cD_8Hs1RIwYCrL__Bd-9YE",
     },
     {
       id: "8",
@@ -93,7 +93,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/rudresh-manjunath21/",
       bio: "Club volunteer | Phase-Changers Lead",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D5635AQG-89qG5DZL9Q/profile-framedphoto-shrink_400_400/profile-framedphoto-shrink_400_400/0/1724616225632?e=1748696400&v=beta&t=dTWXJaICmqdXJOMK6o3HjHko1dLQ55ogTaxnXlslmQg",
+        "https://media.licdn.com/dms/image/v2/D5635AQG-89qG5DZL9Q/profile-framedphoto-shrink_800_800/profile-framedphoto-shrink_800_800/0/1724616225632?e=1749319200&v=beta&t=yViLexDM4CApw7PnZykFrayIfiiqFueBttCcHF0BaU8",
     },
     {
       id: "9",
@@ -103,7 +103,7 @@ export const mockMembers = [
       linkedinUrl: "https://www.linkedin.com/in/james-j-824780324/",
       bio: "Club volunteer",
       imageUrl:
-        "https://media.licdn.com/dms/image/v2/D4E03AQHPdvLL2rCnIw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724487899674?e=1748476800&v=beta&t=-ka_w_Ns_MzXXISjBa0qklgZgCkl60HSCqIEW8DnE38",
+        "https://media.licdn.com/dms/image/v2/D4E03AQHPdvLL2rCnIw/profile-displayphoto-shrink_800_800/profile-displayphoto-shrink_800_800/0/1724487899674?e=1753920000&v=beta&t=VYhgOSd6qu9i_bAWUJC5yMEvAMqOWksct7WJ_lGZCKA",
     },
     {
       id: "10",
@@ -124,6 +124,26 @@ export const mockMembers = [
       bio: "Club volunteer",
       imageUrl:
         "https://media.licdn.com/dms/image/v2/D5603AQEnmQzMcdakPA/profile-displayphoto-shrink_200_200/B56ZXSvqMcHoAY-/0/1742997470143?e=1751500800&v=beta&t=ZQ7G9WKrbtqI5p1K6TqeMgw7i9SfhIkxkK-rDpoQYXc",
+    },
+    {
+      id: "12",
+      name: "Nisarga",
+      role: "Club volunteer",
+      email: "placeholder7@example.com",
+      linkedinUrl: "https://www.linkedin.com/in/nisarga-t-k-a3b67425b/",
+      bio: "Club volunteer",
+      imageUrl:
+        "https://media.licdn.com/dms/image/v2/D5635AQHs89v88Rtbqw/profile-framedphoto-shrink_800_800/profile-framedphoto-shrink_800_800/0/1733333581911?e=1749319200&v=beta&t=keuucErPACjBPofPahcroWcOZDTC43gB-KaCOjExaoU",
+    },
+    {
+      id: "13",
+      name: "Narthana M D",
+      role: "Club volunteer",
+      email: "placeholder7@example.com",
+      linkedinUrl: "https://www.linkedin.com/in/narthana-m-d-7450a925a/",
+      bio: "Club volunteer",
+      imageUrl:
+        "https://media.licdn.com/dms/image/v2/D5635AQEcaI5U-zL39g/profile-framedphoto-shrink_400_400/B56ZWjF4dPGUAg-/0/1742197983392?e=1749319200&v=beta&t=MbWfdl8CwmHCG4JLkd0Cf1bGo3vwfmOnmoYArqkcRV8",
     },
 
 ];

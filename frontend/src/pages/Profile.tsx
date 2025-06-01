@@ -53,6 +53,7 @@ interface Blog {
   author_id: string;
   likes: number;
   created_at: string;
+  is_featured: boolean;
   author: {
     name: string;
     usn: string;
@@ -64,6 +65,27 @@ interface BlogWithUser extends Omit<Blog, 'author'> {
     name: string;
     usn: string;
   } | null;
+}
+
+interface MovieSuggestion {
+  id: string;
+  movie_name: string;
+  user_id: string;
+  user_name: string;
+  user_usn: string;
+  created_at: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
+interface Message {
+  id: string;
+  sender_id: string;
+  sender_name: string;
+  recipient_role: string;
+  content: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  is_deleted: boolean;
 }
 
 const Profile: React.FC = () => {
@@ -116,18 +138,34 @@ const Profile: React.FC = () => {
   const [blogError, setBlogError] = useState<string | null>(null);
   const [isBlogLoading, setIsBlogLoading] = useState(false);
 
+  // Movie suggestions state
+  const [movieSuggestions, setMovieSuggestions] = useState<MovieSuggestion[]>([]);
+
+  // Message states
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [newMessage, setNewMessage] = useState({
+    recipient_role: '',
+    content: ''
+  });
+  const [messageError, setMessageError] = useState<string | null>(null);
+  const [isMessageLoading, setIsMessageLoading] = useState(false);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        console.log('Starting profile fetch...'); // Debug log
         const {
           data: { user },
           error: authError,
         } = await supabase.auth.getUser();
 
         if (!user || authError) {
+          console.log('No user found or auth error:', authError); // Debug log
           setError("Please login to view your profile");
           return;
         }
+
+        console.log('User authenticated:', user.id); // Debug log
 
         // First try to get all fields
         const { data, error } = await supabase
@@ -137,6 +175,7 @@ const Profile: React.FC = () => {
           .single();
 
         if (error) {
+          console.log('Error fetching full profile:', error); // Debug log
           // If error, try without the new columns
           const { data: basicData, error: basicError } = await supabase
             .from("users")
@@ -145,9 +184,11 @@ const Profile: React.FC = () => {
             .single();
 
           if (basicError) {
+            console.log('Error fetching basic profile:', basicError); // Debug log
             throw basicError;
           }
 
+          console.log('Basic profile fetched:', basicData); // Debug log
           // Set profile with default values for new columns
           setUserProfile({
             ...basicData,
@@ -155,6 +196,7 @@ const Profile: React.FC = () => {
             created_at: new Date().toISOString()
           });
         } else {
+          console.log('Full profile fetched:', data); // Debug log
           setUserProfile(data);
         }
 
@@ -208,6 +250,28 @@ const Profile: React.FC = () => {
         // Fetch movies for Suggestion Manager
         if (data?.role === 'Suggestion Manager') {
           setIsMovieLoading(true);
+          
+          // Fetch movie suggestions with user details
+          const { data: suggestionsData, error: suggestionsError } = await supabase
+            .from('movie_suggestions_with_users')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+          if (suggestionsError) {
+            console.error('Error fetching suggestions:', suggestionsError);
+          } else if (suggestionsData) {
+            const formattedSuggestions = suggestionsData.map(suggestion => ({
+              id: suggestion.id,
+              movie_name: suggestion.movie_name,
+              user_id: suggestion.user_id,
+              user_name: suggestion.user_name || 'Anonymous',
+              user_usn: suggestion.user_usn || 'N/A',
+              created_at: suggestion.created_at,
+              status: suggestion.status
+            }));
+            setMovieSuggestions(formattedSuggestions);
+          }
+
           const { data: moviesData, error: moviesError } = await supabase
             .from("movies")
             .select("*")
@@ -237,6 +301,7 @@ const Profile: React.FC = () => {
               author_id,
               likes,
               created_at,
+              is_featured,
               users!author_id (
                 name,
                 usn
@@ -259,6 +324,7 @@ const Profile: React.FC = () => {
               author_id: blog.author_id,
               likes: blog.likes,
               created_at: blog.created_at,
+              is_featured: blog.is_featured,
               author: {
                 name: blog.users?.name || 'Anonymous',
                 usn: blog.users?.usn || 'N/A'
@@ -786,6 +852,254 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleToggleFeatured = async (blogId: string, currentFeatured: boolean) => {
+    try {
+      setBlogError(null);
+      setIsBlogLoading(true);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setBlogError("You must be logged in to feature blogs");
+        return;
+      }
+
+      // Verify user is a Blog Manager
+      if (userProfile?.role !== 'Blog Manager') {
+        setBlogError("Only Blog Managers can feature blogs");
+        return;
+      }
+
+      // If we're featuring a blog, unfeature all other blogs first
+      if (!currentFeatured) {
+        const { error: unfeatureError } = await supabase
+          .from('blogs')
+          .update({ is_featured: false })
+          .eq('is_featured', true);
+
+        if (unfeatureError) throw unfeatureError;
+      }
+
+      // Toggle the featured status
+      const { error: updateError } = await supabase
+        .from('blogs')
+        .update({ is_featured: !currentFeatured })
+        .eq('id', blogId);
+
+      if (updateError) throw updateError;
+
+      // Update local state
+      setBlogs(blogs.map(blog => 
+        blog.id === blogId 
+          ? { ...blog, is_featured: !currentFeatured }
+          : { ...blog, is_featured: false }
+      ));
+    } catch (err) {
+      console.error("Error toggling featured status:", err);
+      setBlogError("Failed to update featured status. Please try again.");
+    } finally {
+      setIsBlogLoading(false);
+    }
+  };
+
+  const fetchMessages = async () => {
+    try {
+      console.log('Starting message fetch...'); // Debug log
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('No user found for message fetch'); // Debug log
+        return;
+      }
+
+      console.log('Fetching messages for role:', userProfile?.role); // Debug log
+
+      if (!userProfile?.role) {
+        console.log('No role found in userProfile'); // Debug log
+        return;
+      }
+
+      let query = supabase
+        .from('messages')
+        .select('*')
+        .eq('is_deleted', false)
+        .order('created_at', { ascending: false });
+
+      // If user is Lead, show all messages they sent
+      if (userProfile.role === 'Lead') {
+        console.log('Fetching messages sent by Lead:', user.id); // Debug log
+        query = query.eq('sender_id', user.id);
+      } else if (userProfile.role === 'student') {
+        console.log('Fetching messages for Students'); // Debug log
+        query = query.eq('recipient_role', 'student');
+      } else {
+        console.log('Fetching messages for role:', userProfile.role); // Debug log
+        query = query.eq('recipient_role', userProfile.role);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching messages:', error); // Debug log
+        throw error;
+      }
+
+      console.log('Fetched messages:', data); // Debug log
+      if (data) {
+        setMessages(data);
+        console.log('Messages state updated with:', data.length, 'messages'); // Debug log
+      }
+    } catch (err) {
+      console.error("Error fetching messages:", err);
+    }
+  };
+
+  useEffect(() => {
+    console.log('userProfile changed:', userProfile); // Debug log
+    if (userProfile?.role) {
+      console.log('Fetching messages for role:', userProfile.role); // Debug log
+      fetchMessages();
+    }
+  }, [userProfile?.role]); // Only depend on the role, not the entire userProfile object
+
+  const handleSendMessage = async () => {
+    try {
+      setMessageError(null);
+      setIsMessageLoading(true);
+
+      if (!newMessage.recipient_role) {
+        setMessageError("Please select a recipient");
+        return;
+      }
+
+      if (!newMessage.content.trim()) {
+        setMessageError("Message cannot be empty");
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessageError("You must be logged in to send messages");
+        return;
+      }
+
+      // Verify user is a Lead
+      if (userProfile?.role !== 'Lead') {
+        setMessageError("Only Leads can send messages");
+        return;
+      }
+
+      console.log('Sending message as Lead:', user.id); // Debug log
+
+      const { data, error } = await supabase
+        .from('messages')
+        .insert([{
+          sender_id: user.id,
+          sender_name: userProfile.name,
+          recipient_role: newMessage.recipient_role,
+          content: newMessage.content.trim(),
+          status: 'pending',
+          is_deleted: false
+        }])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error sending message:', error); // Debug log
+        throw error;
+      }
+
+      if (data) {
+        console.log('Message sent successfully:', data); // Debug log
+        // Update messages immediately
+        setMessages(prevMessages => [data, ...prevMessages]);
+        setNewMessage({ recipient_role: '', content: '' });
+        
+        // Refresh messages to ensure consistency
+        await fetchMessages();
+      }
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setMessageError("Failed to send message. Please try again.");
+    } finally {
+      setIsMessageLoading(false);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    try {
+      setMessageError(null);
+      setIsMessageLoading(true);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessageError("You must be logged in to delete messages");
+        return;
+      }
+
+      // First, get the message to check if user has permission to delete it
+      const { data: message, error: fetchError } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('id', messageId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Check if user is either the sender or the recipient
+      const isSender = message.sender_id === user.id;
+      const isRecipient = message.recipient_role === userProfile?.role;
+
+      if (!isSender && !isRecipient) {
+        setMessageError("You don't have permission to delete this message");
+        return;
+      }
+
+      // Perform the soft delete
+      const { error: updateError } = await supabase
+        .from('messages')
+        .update({ is_deleted: true })
+        .eq('id', messageId);
+
+      if (updateError) throw updateError;
+
+      // Update local state by filtering out the deleted message
+      setMessages(messages.filter(m => m.id !== messageId));
+    } catch (err) {
+      console.error("Error deleting message:", err);
+      setMessageError("Failed to delete message. Please try again.");
+    } finally {
+      setIsMessageLoading(false);
+    }
+  };
+
+  const handleUpdateMessageStatus = async (messageId: string, newStatus: 'approved' | 'rejected') => {
+    try {
+      setMessageError(null);
+      setIsMessageLoading(true);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setMessageError("You must be logged in to update message status");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('messages')
+        .update({ status: newStatus })
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      setMessages(messages.map(m => 
+        m.id === messageId ? { ...m, status: newStatus } : m
+      ));
+    } catch (err) {
+      console.error("Error updating message status:", err);
+      setMessageError("Failed to update message status. Please try again.");
+    } finally {
+      setIsMessageLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-xl mx-auto mt-10 bg-white shadow-xl rounded-lg p-6">
@@ -846,6 +1160,115 @@ const Profile: React.FC = () => {
             <span className="text-gray-700">Total Likes Received</span>
             <span className="font-medium text-gray-900">{userProfile.reputation || 0}</span>
           </div>
+        </div>
+      </div>
+
+      {/* Role Instructions Section */}
+      <div className="mt-6 border-t border-gray-200 pt-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Role Guidelines</h3>
+        <div className="bg-blue-50 rounded-lg p-4">
+          {userProfile.role === 'Lead' && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-blue-800">Lead Responsibilities:</h4>
+              <ul className="list-disc list-inside text-blue-700 space-y-1">
+                <li>Oversee overall progress and success of the domain</li>
+                <li>Manage and organize domain-specific events</li>
+                <li>Announce important dates and updates to club members</li>
+                <li>Coordinate with admin for calendar updates and event scheduling</li>
+                <li>Launch and manage domain banners for special sessions</li>
+                <li>Take responsibility for domain's success and performance</li>
+                <li>Manage domain logo usage and branding</li>
+                <li>Set and communicate event dates and timings</li>
+                <li>Ensure smooth coordination between team members</li>
+                <li>Maintain professional communication with club members</li>
+              </ul>
+              <div className="mt-4 p-3 bg-blue-100 rounded-lg">
+                <p className="text-blue-800 font-medium">Key Focus Areas:</p>
+                <ul className="list-disc list-inside text-blue-700 space-y-1 mt-2">
+                  <li>Event Management & Coordination</li>
+                  <li>Team Leadership & Communication</li>
+                  <li>Domain Success & Progress Tracking</li>
+                  <li>Brand Management & Visibility</li>
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {userProfile.role === 'Quizmaster' && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-blue-800">Quizmaster Responsibilities:</h4>
+              <ul className="list-disc list-inside text-blue-700 space-y-1">
+                <li>Create and manage quizzes for the club</li>
+                <li>Provide clear quiz instructions and difficulty levels</li>
+                <li>Ensure quiz links and response forms are working</li>
+                <li>Remove outdated or completed quizzes</li>
+                <li>Monitor quiz participation and results</li>
+                <li>Report quiz results to admin/domain lead for winner announcements</li>
+                <li>Coordinate with leads for quiz result announcements</li>
+              </ul>
+            </div>
+          )}
+
+          {userProfile.role === 'News-Master' && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-blue-800">News-Master Responsibilities:</h4>
+              <ul className="list-disc list-inside text-blue-700 space-y-1">
+                <li>Share relevant news and updates</li>
+                <li>Ensure news items are accurate and verified</li>
+                <li>Include proper sources and links</li>
+                <li>Keep news section updated and organized</li>
+                <li>Remove outdated or irrelevant news</li>
+              </ul>
+            </div>
+          )}
+
+          {userProfile.role === 'Suggestion Manager' && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-blue-800">Suggestion Manager Responsibilities:</h4>
+              <ul className="list-disc list-inside text-blue-700 space-y-1">
+                <li>Curate and share educational content</li>
+                <li>Add movies, documentaries, and learning resources</li>
+                <li>Ensure content is appropriate and valuable</li>
+                <li>Keep content links updated and working</li>
+                <li>Organize content by categories or themes</li>
+                <li>Monitor admin's approval/rejection decisions</li>
+                <li>Add approved movie suggestions to the content library</li>
+                <li>Review rejected suggestions to understand content guidelines</li>
+              </ul>
+            </div>
+          )}
+
+          {userProfile.role === 'Blog Manager' && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-blue-800">Blog Manager Responsibilities:</h4>
+              <ul className="list-disc list-inside text-blue-700 space-y-1">
+                <li>Review and manage blog content</li>
+                <li>Ensure blogs follow community guidelines</li>
+                <li>Monitor blog engagement and reports</li>
+                <li>Remove inappropriate or reported content</li>
+                <li>Maintain quality and relevance of blog posts</li>
+                <li>Feature blogs that are relevant to the club</li>
+              </ul>
+            </div>
+          )}
+
+          {userProfile.role === 'admin' && (
+            <div className="space-y-2">
+              <h4 className="font-medium text-blue-800">Admin Responsibilities:</h4>
+              <ul className="list-disc list-inside text-blue-700 space-y-1">
+                <li>Manage and oversee all club activities and members</li>
+                <li>Approve or reject movie suggestions from members</li>
+                <li>Monitor and maintain content quality across all sections</li>
+                <li>Manage user roles and permissions</li>
+                <li>Review and moderate blog content</li>
+                <li>Coordinate with domain leads for event management</li>
+                <li>Handle quiz result announcements and winner declarations</li>
+                <li>Maintain club calendar and event schedules</li>
+                <li>Ensure smooth operation of all club features</li>
+                <li>Address member concerns and feedback</li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
@@ -912,13 +1335,13 @@ const Profile: React.FC = () => {
                   placeholder="Quiz Name"
                   value={quizInput.name}
                   onChange={(e) => setQuizInput({ ...quizInput, name: e.target.value })}
-                  className="w-full p-2 border rounded"
+                  className="w-full p-2 border rounded"   
                 />
               </div>
-              <div>
+              <div> 
                 <input
                   type="text"
-                  placeholder="Quiz Code"
+                  placeholder="Quiz Code"  
                   value={quizInput.code}
                   onChange={(e) => setQuizInput({ ...quizInput, code: e.target.value })}
                   className="w-full p-2 border rounded"
@@ -1011,7 +1434,7 @@ const Profile: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      )}  
 
       {/* News Section for News-Master users */}
       {userProfile.role === 'News-Master' && (
@@ -1212,6 +1635,48 @@ const Profile: React.FC = () => {
             </div>
           </div>
         </div>
+      )}  
+
+      {/* Movie Suggestions Section for Suggestion Manager users */}
+      {userProfile.role === 'Suggestion Manager' && (
+        <div className="mt-8 border-t border-gray-200 pt-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Film className="h-6 w-6 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Movie Suggestions</h3>
+          </div>
+          <div className="space-y-4">
+            {movieSuggestions && movieSuggestions.length > 0 ? (
+              movieSuggestions.map((suggestion) => (
+                <div
+                  key={suggestion.id}
+                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 mb-1">
+                        {suggestion.movie_name}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                        <span>Suggested by: {suggestion.user_name}</span>
+                        <span>USN: {suggestion.user_usn}</span>
+                        <span>Date: {new Date(suggestion.created_at).toLocaleDateString()}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          suggestion.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          suggestion.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'
+                        }`}>
+                          {suggestion.status.charAt(0).toUpperCase() + suggestion.status.slice(1)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 text-center py-4">No movie suggestions yet</p>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Blog Management Section for Blog Manager users */}
@@ -1237,11 +1702,20 @@ const Profile: React.FC = () => {
                 blogs.map((blog) => (
                   <div
                     key={blog.id}
-                    className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    className={`border rounded-lg p-4 hover:bg-gray-50 transition-colors ${
+                      blog.is_featured ? 'bg-yellow-50 border-yellow-200' : ''
+                    }`}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1">
-                        <h3 className="font-medium text-gray-900 mb-1">{blog.title}</h3>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-gray-900">{blog.title}</h3>
+                          {blog.is_featured && (
+                            <span className="bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full text-xs font-medium">
+                              Featured
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-gray-600 mb-2 line-clamp-2">{blog.description}</p>
                         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
                           <span>By: {blog.author?.name || 'Anonymous'}</span>
@@ -1250,16 +1724,32 @@ const Profile: React.FC = () => {
                           <span>Created: {new Date(blog.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleDeleteBlog(blog.id)}
-                        className="ml-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
-                        title="Delete blog"
-                        disabled={isBlogLoading}
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleToggleFeatured(blog.id, blog.is_featured)}
+                          className={`p-2 rounded-full transition-colors ${
+                            blog.is_featured 
+                              ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200' 
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                          title={blog.is_featured ? "Unfeature blog" : "Feature blog"}
+                          disabled={isBlogLoading}
+                        >
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteBlog(blog.id)}
+                          className="ml-4 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                          title="Delete blog"
+                          disabled={isBlogLoading}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))
@@ -1271,13 +1761,212 @@ const Profile: React.FC = () => {
         </div>
       )}
 
+      {/* Message Section for Lead users */}
+      {userProfile.role === 'Lead' && (
+        <div className="mt-8 border-t border-gray-200 pt-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Megaphone className="h-6 w-6 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Send Messages</h3>
+          </div>
+          <div className="space-y-4">
+            <select
+              value={newMessage.recipient_role}
+              onChange={(e) => setNewMessage({ ...newMessage, recipient_role: e.target.value })}
+              className="w-full p-2 border rounded"
+            >
+              <option value="">Select Recipient</option>
+              <option value="Blog Manager">Blog Manager</option>
+              <option value="Quizmaster">Quizmaster</option>
+              <option value="Suggestion Manager">Suggestion Manager</option>
+              <option value="News-Master">News-Master</option>
+              <option value="admin">Admin</option>
+              <option value="student">Student</option>
+            </select>  
+            <textarea       
+              value={newMessage.content}   
+              onChange={(e) => setNewMessage({ ...newMessage, content: e.target.value })}
+              placeholder="Type your message..."
+              className="w-full p-2 border rounded min-h-[100px] resize-y"
+            />
+            {messageError && (
+              <p className="text-red-500 text-sm">{messageError}</p>
+            )}
+            <button
+              onClick={handleSendMessage}  
+              disabled={isMessageLoading}
+              className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {isMessageLoading ? 'Sending...' : 'Send Message'}
+            </button>
+          </div>
+
+          <div className="mt-8">
+            <h4 className="text-lg font-semibold text-gray-900 mb-4">Sent Messages</h4>
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-medium text-gray-900">To: {message.recipient_role}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          message.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                          message.status === 'approved' ? 'bg-green-100 text-green-800' :
+                          'bg-red-100 text-red-800'   
+                        }`}>  
+                          {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 mb-2">{message.content}</p>
+                      <p className="text-sm text-gray-500">
+                        Sent on {new Date(message.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleDeleteMessage(message.id)}
+                      className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                      title="Delete message"
+                      disabled={isMessageLoading}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {messages.length === 0 && (
+                <p className="text-gray-500 text-center py-4">No messages sent yet</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message Section for other roles */}
+      {userProfile.role !== 'Lead' && userProfile.role !== 'student' && (
+        <div className="mt-8 border-t border-gray-200 pt-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Megaphone className="h-6 w-6 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Messages from Lead</h3>
+          </div>
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="font-medium text-gray-900">From: {message.sender_name}</span>
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        message.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        message.status === 'approved' ? 'bg-green-100 text-green-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                      </span>
+                    </div>
+                    <p className="text-gray-700 mb-2">{message.content}</p>
+                    <p className="text-sm text-gray-500">
+                      Received on {new Date(message.created_at).toLocaleString()}
+                    </p>
+                  </div>       
+                  <div className="flex items-center gap-2">
+                    {message.status === 'pending' && (  
+                      <>
+                        <button
+                          onClick={() => handleUpdateMessageStatus(message.id, 'approved')}
+                          className="p-2 text-green-500 hover:text-green-700 hover:bg-green-50 rounded-full transition-colors"
+                          title="Approve message"
+                          disabled={isMessageLoading}
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </button> 
+                        <button   
+                          onClick={() => handleUpdateMessageStatus(message.id, 'rejected')}
+                          className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                          title="Reject message"  
+                          disabled={isMessageLoading}  
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
+                    <button
+                      onClick={() => handleDeleteMessage(message.id)}
+                      className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                      title="Delete message"
+                      disabled={isMessageLoading}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {messages.length === 0 && (
+              <p className="text-gray-500 text-center py-4">No messages received</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Message Section for students */}
+      {userProfile.role === 'student' && (
+        <div className="mt-8 border-t border-gray-200 pt-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <Megaphone className="h-6 w-6 text-blue-600" />
+            <h3 className="text-lg font-semibold text-gray-900">Messages from Lead</h3>
+          </div>
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="font-medium text-gray-900">From: {message.sender_name}</span>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      message.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      message.status === 'approved' ? 'bg-green-100 text-green-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+                    </span>
+                  </div>
+                  <p className="text-gray-700 mb-2">{message.content}</p>
+                  <p className="text-sm text-gray-500">  
+                    Received on {new Date(message.created_at).toLocaleString()}
+                  </p>
+                </div>
+              </div>   
+            ))}  
+            {messages.length === 0 && (
+              <p className="text-gray-500 text-center py-4">No messages received</p>
+            )}
+          </div>
+        </div>
+      )}  
+
       <button
         onClick={handleLogout}
         className="mt-6 w-full bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors"
-      >
-        Logout
-      </button>
-    </div>
+      >  
+        Logout 
+      </button>   
+    </div> 
   );
 };
 

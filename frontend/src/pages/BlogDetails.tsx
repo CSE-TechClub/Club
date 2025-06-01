@@ -109,11 +109,14 @@ const BlogDetails = () => {
         .select('id')
         .eq('blog_id', id)
         .eq('user_id', user.id)
-        .single();
+        .limit(1);
 
-      if (!error && data) {
-        setIsReported(true);
+      if (error) {
+        console.error('Error checking report status:', error);
+        return;
       }
+
+      setIsReported(data && data.length > 0);
     } catch (error) {
       console.error('Error checking report status:', error);
     }
