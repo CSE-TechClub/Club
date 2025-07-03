@@ -17,7 +17,11 @@ const Login: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "USN") {
+      setFormData((prev) => ({ ...prev, [name]: value.toUpperCase() }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,12 +29,13 @@ const Login: React.FC = () => {
     setLoading(true);
 
     const { USN, password } = formData;
+    const usnUpper = USN.toUpperCase();
 
     // 1. Fetch email & role by USN
     const { data: userRecord, error: lookupError } = await supabase
       .from("users")
       .select("email, role")
-      .eq("usn", USN)
+      .eq("usn", usnUpper)
       .single();
 
     if (lookupError || !userRecord) {
@@ -78,6 +83,8 @@ const Login: React.FC = () => {
             value={formData.USN}
             onChange={handleChange}
             required
+            autoComplete="off"
+            style={{ textTransform: "uppercase" }}
             className="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-google.blue"
           />
         </div>

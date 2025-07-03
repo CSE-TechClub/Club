@@ -9,6 +9,8 @@ interface RegisterFormState {
   password: string;
 }
 
+const USN_PATTERN = /^[1-9]KI\d{2}CS\d{3}$/;
+
 const Register: React.FC = () => {
   const [formData, setFormData] = useState<RegisterFormState>({
     name: "",
@@ -17,18 +19,43 @@ const Register: React.FC = () => {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "usn") {
+      setFormData((prev) => ({ ...prev, [name]: value.toUpperCase() }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
 
     const { name, email, usn, password } = formData;
+
+    // Validate USN pattern
+    if (!USN_PATTERN.test(usn)) {
+      setLoading(false);
+      setError("USN must match the pattern 1KI22CS001 (all uppercase)");
+      return;
+    }
+
+    // Check uniqueness of USN
+    const { data: existingUser, error: usnError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("usn", usn)
+      .single();
+    if (existingUser) {
+      setLoading(false);
+      setError("USN already registered. Please login or use a different USN.");
+      return;
+    }
 
     // 1. Sign up the user via Supabase Auth
     const { data, error: signUpError } = await supabase.auth.signUp({
@@ -38,26 +65,26 @@ const Register: React.FC = () => {
 
     if (signUpError) {
       setLoading(false);
-      return alert(`Registration failed: ${signUpError.message}`);
+      setError(`Registration failed: ${signUpError.message}`);
+      return;
     }
 
     // 2. On success, insert additional profile data into your 'users' table
-    const { error: dbError } = await supabase
-      .from("users")
-      .insert([
-        {
-          id: data.user?.id,
-          name,
-          email,
-          usn,
-          role: "student",
-        },
-      ]);
+    const { error: dbError } = await supabase.from("users").insert([
+      {
+        id: data.user?.id,
+        name,
+        email,
+        usn,
+        role: "student",
+      },
+    ]);
 
     setLoading(false);
 
     if (dbError) {
-      return alert(`Database error: ${dbError.message}`);
+      setError(`Database error: ${dbError.message}`);
+      return;
     }
 
     alert("Registration successful! Please check your email to confirm.");
@@ -81,16 +108,29 @@ const Register: React.FC = () => {
             <input
               id={field}
               name={field}
-              type={field === "email" ? "email" : field === "password" ? "password" : "text"}
+              type={
+                field === "email"
+                  ? "email"
+                  : field === "password"
+                  ? "password"
+                  : "text"
+              }
               value={(formData as any)[field]}
               onChange={handleChange}
               required
+              autoComplete={field === "usn" ? "off" : undefined}
+              style={field === "usn" ? { textTransform: "uppercase" } : {}}
               className={`w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 ${
-                field === "password" ? "focus:ring-google.red" : "focus:ring-google.blue"
+                field === "password"
+                  ? "focus:ring-google.red"
+                  : "focus:ring-google.blue"
               }`}
             />
           </div>
         ))}
+        {error && (
+          <div className="text-red-500 text-center text-sm">{error}</div>
+        )}
         <button
           type="submit"
           disabled={loading}
@@ -113,4 +153,3 @@ const Register: React.FC = () => {
 };
 
 export default Register;
-
