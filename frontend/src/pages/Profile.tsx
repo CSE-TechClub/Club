@@ -23,6 +23,9 @@ interface UserProfile {
   linkedin?: string;
   instagram?: string;
   twitter?: string;
+  portfolio?: string;
+  leetcode?: string;
+  resume_pdf?: string;
 }
 
 interface Announcement {
@@ -178,6 +181,14 @@ const Profile: React.FC = () => {
   });
   const [profilePhotoFile, setProfilePhotoFile] = useState<File | null>(null);
 
+  const [isPortfolioModalOpen, setIsPortfolioModalOpen] = useState(false);
+  const [portfolioLinks, setPortfolioLinks] = useState({
+    portfolio: userProfile?.portfolio || "",
+    leetcode: userProfile?.leetcode || "",
+    resume_pdf: userProfile?.resume_pdf || "",
+  });
+  const [portfolioError, setPortfolioError] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -199,7 +210,7 @@ const Profile: React.FC = () => {
         const { data, error } = await supabase
           .from("users")
           .select(
-            "name, email, usn, role, reputation, created_at, profile_photo, github, linkedin, instagram, twitter"
+            "name, email, usn, role, reputation, created_at, profile_photo, github, linkedin, instagram, twitter, portfolio, leetcode, resume_pdf"
           )
           .eq("id", user.id)
           .single();
@@ -229,10 +240,19 @@ const Profile: React.FC = () => {
             linkedin: "",
             instagram: "",
             twitter: "",
+            portfolio: "",
+            leetcode: "",
+            resume_pdf: "",
           });
+          setPortfolioLinks({ portfolio: "", leetcode: "", resume_pdf: "" });
         } else {
           console.log("Full profile fetched:", data); // Debug log
           setUserProfile(data);
+          setPortfolioLinks({
+            portfolio: data.portfolio || "",
+            leetcode: data.leetcode || "",
+            resume_pdf: data.resume_pdf || "",
+          });
         }
 
         // Fetch announcements only for Lead users
@@ -1217,10 +1237,16 @@ const Profile: React.FC = () => {
       {/* Edit Profile Button */}
       <div className="flex justify-end mb-2">
         <button
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors mr-2"
           onClick={() => setIsEditModalOpen(true)}
         >
           Edit Profile
+        </button>
+        <button
+          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors"
+          onClick={() => setIsPortfolioModalOpen(true)}
+        >
+          Portfolio
         </button>
       </div>
       {/* Profile Photo */}
@@ -1307,6 +1333,45 @@ const Profile: React.FC = () => {
         <div>
           <strong>Email:</strong> {userProfile.email}
         </div>
+        {userProfile.portfolio && (
+          <div>
+            <strong>Portfolio:</strong>{" "}
+            <a
+              href={userProfile.portfolio}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:underline"
+            >
+              {userProfile.portfolio}
+            </a>
+          </div>
+        )}
+        {userProfile.leetcode && (
+          <div>
+            <strong>LeetCode:</strong>{" "}
+            <a
+              href={userProfile.leetcode}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-orange-600 hover:underline"
+            >
+              {userProfile.leetcode}
+            </a>
+          </div>
+        )}
+        {userProfile.resume_pdf && (
+          <div>
+            <strong>Resume (PDF):</strong>{" "}
+            <a
+              href={userProfile.resume_pdf}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-600 hover:underline"
+            >
+              View Resume
+            </a>
+          </div>
+        )}
       </div>
 
       <div className="mt-6">
@@ -2473,6 +2538,124 @@ const Profile: React.FC = () => {
               <button
                 type="submit"
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+              >
+                Save
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+      {isPortfolioModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+              onClick={() => setIsPortfolioModalOpen(false)}
+            >
+              &times;
+            </button>
+            <h2 className="text-xl font-semibold mb-4">Edit Portfolio Links</h2>
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setPortfolioError(null);
+                try {
+                  const {
+                    data: { user },
+                  } = await supabase.auth.getUser();
+                  if (!user) throw new Error("Not authenticated");
+                  const { data, error } = await supabase
+                    .from("users")
+                    .update({
+                      portfolio: portfolioLinks.portfolio,
+                      leetcode: portfolioLinks.leetcode,
+                      resume_pdf: portfolioLinks.resume_pdf,
+                    })
+                    .eq("id", user.id)
+                    .select();
+                  if (error) throw error;
+                  if (!data || data.length === 0) {
+                    setPortfolioError(
+                      "No user row was updated. Please check your user ID and table schema."
+                    );
+                    return;
+                  }
+                  setUserProfile((prev) =>
+                    prev
+                      ? {
+                          ...prev,
+                          portfolio: portfolioLinks.portfolio,
+                          leetcode: portfolioLinks.leetcode,
+                          resume_pdf: portfolioLinks.resume_pdf,
+                        }
+                      : prev
+                  );
+                  setIsPortfolioModalOpen(false);
+                } catch (err) {
+                  setPortfolioError(
+                    "Failed to update portfolio links. Please try again."
+                  );
+                }
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-gray-700 mb-1">
+                  Portfolio Link
+                </label>
+                <input
+                  type="url"
+                  value={portfolioLinks.portfolio}
+                  onChange={(e) =>
+                    setPortfolioLinks({
+                      ...portfolioLinks,
+                      portfolio: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                  placeholder="https://your-portfolio.com"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-1">
+                  LeetCode Profile Link
+                </label>
+                <input
+                  type="url"
+                  value={portfolioLinks.leetcode}
+                  onChange={(e) =>
+                    setPortfolioLinks({
+                      ...portfolioLinks,
+                      leetcode: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                  placeholder="https://leetcode.com/yourusername"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 mb-1">
+                  Google Drive Resume PDF Link
+                </label>
+                <input
+                  type="url"
+                  value={portfolioLinks.resume_pdf}
+                  onChange={(e) =>
+                    setPortfolioLinks({
+                      ...portfolioLinks,
+                      resume_pdf: e.target.value,
+                    })
+                  }
+                  className="w-full p-2 border rounded"
+                  placeholder="https://drive.google.com/your-resume-link"
+                />
+              </div>
+              {portfolioError && (
+                <p className="text-red-500 text-sm">{portfolioError}</p>
+              )}
+              <button
+                type="submit"
+                className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors"
               >
                 Save
               </button>
